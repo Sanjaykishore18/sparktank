@@ -22,10 +22,15 @@ const { setupSocket } = require('./socket/debateRoom');
 const app = express();
 const server = http.createServer(app);
 
+// CORS origins
+const allowedOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(',').map(u => u.trim())
+  : [];
+
 // Socket.io setup
 const io = new Server(server, {
   cors: {
-    origin: true, // Allow any origin to dynamically reflect req origin
+    origin: allowedOrigins.length > 0 ? allowedOrigins : true,
     methods: ['GET', 'POST'],
     credentials: true
   }
@@ -33,7 +38,7 @@ const io = new Server(server, {
 
 // Middleware
 app.use(cors({
-  origin: true,
+  origin: allowedOrigins.length > 0 ? allowedOrigins : true,
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
