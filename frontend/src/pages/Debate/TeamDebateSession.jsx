@@ -8,8 +8,8 @@ import './Debate.css';
 
 // Derive socket URL from API URL (strip /api suffix if present)
 const SOCKET_URL = (() => {
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-  return apiUrl.replace(/\/api\/?$/, '');
+  const apiUrl = import.meta.env.VITE_API_URL || '/api';
+  return apiUrl.replace(/\/api\/?$/, '') || '/';
 })();
 
 export default function TeamDebateSession() {
