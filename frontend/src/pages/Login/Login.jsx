@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { FaBolt, FaTriangleExclamation, FaArrowRight } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import './Login.css';
@@ -41,14 +42,14 @@ export default function Login() {
       <div className="login-container animate-scale-in">
         <div className="login-card glass-card">
           <div className="login-header">
-            <div className="login-icon">⚡</div>
+            <div className="login-icon"><FaBolt /></div>
             <h2>Welcome to SpeakX</h2>
             <p>Start your AI-powered training journey</p>
           </div>
 
           {error && (
             <div className="login-error">
-              <span>⚠️</span> {error}
+              <span><FaTriangleExclamation /></span> {error}
             </div>
           )}
 
@@ -94,7 +95,7 @@ export default function Login() {
               {loading ? (
                 <><span className="spinner" style={{width: 20, height: 20, borderWidth: 2}} /> Signing in...</>
               ) : (
-                'Start Training →'
+                <>Start Training <FaArrowRight style={{marginLeft: '6px'}}/></>
               )}
             </button>
           </form>

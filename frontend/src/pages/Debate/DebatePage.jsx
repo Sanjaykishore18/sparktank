@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { FaKhanda, FaRobot, FaUsers, FaLock, FaHandshake, FaDice, FaRotate, FaBolt, FaCircle, FaThumbsUp, FaThumbsDown, FaRocket } from 'react-icons/fa6';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import './Debate.css';
@@ -69,7 +70,7 @@ export default function DebatePage() {
     <div className="debate-page page" id="debate-page">
       <div className="container">
         <div className="page-header animate-slide-up">
-          <div className="page-header-icon module-debate">⚔️</div>
+          <div className="page-header-icon module-debate"><FaKhanda /></div>
           <div>
             <h1>Debate Arena</h1>
             <p>Practice argumentation with AI or invite friends for a multiplayer debate.</p>
@@ -82,7 +83,7 @@ export default function DebatePage() {
             className={`tab-btn ${activeTab === 'ai' ? 'active' : ''}`}
             onClick={() => setActiveTab('ai')}
           >
-            🤖 AI Debate
+            <FaRobot /> AI Debate
           </button>
           <button 
             className={`tab-btn ${activeTab === 'team' ? 'active' : ''}`}
@@ -90,13 +91,13 @@ export default function DebatePage() {
             disabled={user?.plan !== 'premium'}
             title={user?.plan !== 'premium' ? "Premium Feature" : ""}
           >
-            👥 Team Rooms {user?.plan !== 'premium' && '🔒'}
+            <FaUsers /> Team Rooms {user?.plan !== 'premium' && <FaLock style={{fontSize:'0.75rem'}}/>}
           </button>
         </div>
 
         {user?.plan !== 'premium' && activeTab === 'team' && (
           <div className="glass-card premium-lock" style={{textAlign: 'center', padding: 'var(--space-8)', marginTop: 'var(--space-6)'}}>
-            <span style={{fontSize: '3rem', marginBottom: 'var(--space-4)', display: 'block'}}>🔒</span>
+            <FaLock style={{fontSize: '3rem', marginBottom: 'var(--space-4)', display: 'block', margin: '0 auto', color: 'var(--text-muted)'}}/>
             <h3>Premium Feature</h3>
             <p style={{marginBottom: 'var(--space-4)'}}>Upgrade your plan to debate in real-time with friends and colleagues.</p>
             <button className="btn btn-accent" onClick={() => navigate('/pricing')}>View Pro Plans</button>
@@ -107,7 +108,7 @@ export default function DebatePage() {
         {(activeTab === 'team' && user?.plan === 'premium') && (
           <div className="debate-setup glass-card animate-slide-up" style={{animationDelay: '0.1s', marginBottom: 'var(--space-6)'}}>
             <div className="setup-header" style={{ marginBottom: 'var(--space-4)' }}>
-              <h3>🤝 Team Rooms</h3>
+              <h3><FaHandshake style={{marginRight:'6px'}}/> Team Rooms</h3>
               <p>Quickly join a friend's room or host your own custom debate.</p>
             </div>
             
@@ -173,7 +174,7 @@ export default function DebatePage() {
         {(activeTab === 'ai' || (activeTab === 'team' && user?.plan === 'premium')) && (
           <div className="debate-setup glass-card animate-slide-up" style={{animationDelay: '0.15s'}}>
             <div className="setup-header">
-              <h3>🎲 Generate a Debate Topic</h3>
+              <h3><FaDice style={{marginRight:'6px'}}/> Generate a Debate Topic</h3>
               <p>{activeTab === 'ai' ? 'AI will generate a thought-provoking topic for you to debate' : 'Host a new room by generating a topic first.'}</p>
             </div>
 
@@ -186,7 +187,7 @@ export default function DebatePage() {
               {loadingTopic ? (
                 <><span className="spinner" style={{width: 20, height: 20, borderWidth: 2}} /> Generating...</>
               ) : (
-                <>{topic ? '🔄 New Topic' : '⚡ Generate Topic'}</>
+                <>{topic ? <><FaRotate style={{marginRight:'6px'}}/> New Topic</> : <><FaBolt style={{marginRight:'6px'}}/> Generate Topic</>}</>
               )}
             </button>
 
@@ -197,13 +198,13 @@ export default function DebatePage() {
                 
                 <div className="stance-grid">
                   <div className="stance-section">
-                    <h4 className="stance-for">🟢 For</h4>
+                    <h4 className="stance-for"><FaCircle style={{marginRight:'4px', color:'var(--success-400)'}}/> For</h4>
                     <ul>
                       {topic.forPoints?.map((p, i) => <li key={i}>{p}</li>)}
                     </ul>
                   </div>
                   <div className="stance-section">
-                    <h4 className="stance-against">🔴 Against</h4>
+                    <h4 className="stance-against"><FaCircle style={{marginRight:'4px', color:'var(--error-400)'}}/> Against</h4>
                     <ul>
                       {topic.againstPoints?.map((p, i) => <li key={i}>{p}</li>)}
                     </ul>
@@ -218,14 +219,14 @@ export default function DebatePage() {
                       onClick={() => setSelectedStance('for')}
                       id="stance-for-btn"
                     >
-                      👍 I'm For It
+                      <><FaThumbsUp style={{marginRight:'6px'}}/> I'm For It</>
                     </button>
                     <button
                       className={`btn ${selectedStance === 'against' ? 'btn-accent' : 'btn-ghost'}`}
                       onClick={() => setSelectedStance('against')}
                       id="stance-against-btn"
                     >
-                      👎 I'm Against It
+                      <><FaThumbsDown style={{marginRight:'6px'}}/> I'm Against It</>
                     </button>
                   </div>
                 </div>
@@ -237,7 +238,7 @@ export default function DebatePage() {
                     disabled={starting}
                     id="start-debate-btn"
                   >
-                    {activeTab === 'team' ? (starting ? 'Creating Room...' : '👥 Create Team Room') : (starting ? 'Starting...' : '🚀 Start AI Debate')}
+                    {activeTab === 'team' ? (starting ? 'Creating Room...' : <><FaUsers style={{marginRight:'6px'}}/> Create Team Room</>) : (starting ? 'Starting...' : <><FaRocket style={{marginRight:'6px'}}/> Start AI Debate</>)}
                   </button>
                 )}
               </div>

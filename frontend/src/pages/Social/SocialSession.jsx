@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { FaTrophy, FaStar, FaChartLine, FaDumbbell, FaGlobe, FaFlagCheckered, FaUser, FaRobot, FaStop, FaMicrophone, FaPaperPlane, FaLightbulb, FaArrowRight } from 'react-icons/fa6';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 import api from '../../services/api';
@@ -87,11 +88,11 @@ export default function SocialSession() {
         <div className="container">
           <div className="feedback-card glass-card animate-scale-in">
             <div className="feedback-header">
-              <h2>🎉 Challenge Complete!</h2>
+              <h2><FaTrophy style={{marginRight:'8px'}}/>Challenge Complete!</h2>
             </div>
             <div className="feedback-xp">
               <div className="xp-earned animate-float">
-                <span className="xp-icon">✨</span>
+                <span className="xp-icon"><FaStar /></span>
                 <span className="xp-amount">+{xpEarned} XP</span>
               </div>
             </div>
@@ -118,17 +119,17 @@ export default function SocialSession() {
             </div>
             <div className="feedback-grid">
               {feedback.strengths?.length > 0 && (
-                <div className="feedback-section"><h4>💪 Strengths</h4><ul>{feedback.strengths.map((s, i) => <li key={i}>{s}</li>)}</ul></div>
+                <div className="feedback-section"><h4><FaDumbbell style={{marginRight:'6px'}}/>Strengths</h4><ul>{feedback.strengths.map((s, i) => <li key={i}>{s}</li>)}</ul></div>
               )}
               {feedback.areasToImprove?.length > 0 && (
-                <div className="feedback-section"><h4>📈 Improve</h4><ul>{feedback.areasToImprove.map((s, i) => <li key={i}>{s}</li>)}</ul></div>
+                <div className="feedback-section"><h4><FaChartLine style={{marginRight:'6px'}}/>Improve</h4><ul>{feedback.areasToImprove.map((s, i) => <li key={i}>{s}</li>)}</ul></div>
               )}
             </div>
             {feedback.suggestions?.length > 0 && (
-              <div className="feedback-section"><h4>💡 Suggestions</h4><ul>{feedback.suggestions.map((s, i) => <li key={i}>{s}</li>)}</ul></div>
+              <div className="feedback-section"><h4><FaLightbulb style={{marginRight:'6px'}}/>Suggestions</h4><ul>{feedback.suggestions.map((s, i) => <li key={i}>{s}</li>)}</ul></div>
             )}
             <div className="feedback-actions">
-              <button onClick={() => navigate('/social')} className="btn btn-primary btn-lg">New Challenge →</button>
+              <button onClick={() => navigate('/social')} className="btn btn-primary btn-lg">New Challenge <FaArrowRight style={{marginLeft:'6px'}}/></button>
               <button onClick={() => navigate('/dashboard')} className="btn btn-ghost btn-lg">Dashboard</button>
             </div>
           </div>
@@ -142,22 +143,22 @@ export default function SocialSession() {
       <div className="container">
         <div className="session-header glass-card">
           <div className="session-info">
-            <h3>🌐 Social Challenge</h3>
+            <h3><FaGlobe style={{marginRight:'6px'}}/>Social Challenge</h3>
             <span className="badge badge-premium">Premium</span>
           </div>
           <button onClick={endSession} className="btn btn-accent" disabled={ending || messages.length < 2} id="end-social-btn">
-            {ending ? 'Evaluating...' : '🏁 End & Evaluate'}
+            {ending ? 'Evaluating...' : <><FaFlagCheckered style={{marginRight:'6px'}}/> End & Evaluate</>}
           </button>
         </div>
         <div className="chat-area">
           <div className="chat-messages">
             {messages.length === 0 && (
-              <div className="chat-empty"><span>🌐</span><p>Start the conversation! Introduce yourself.</p></div>
+              <div className="chat-empty"><span><FaGlobe /></span><p>Start the conversation! Introduce yourself.</p></div>
             )}
             {messages.map((msg, i) => (
               <div key={i} className={`chat-bubble ${msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'}`}>
                 <div className="bubble-header">
-                  <span>{msg.role === 'user' ? '👤 You' : '🤖 AI Partner'}</span>
+                  <span>{msg.role === 'user' ? <><FaUser style={{marginRight:'4px'}}/> You</> : <><FaRobot style={{marginRight:'4px'}}/> AI Partner</>}</span>
                   <span>{new Date(msg.timestamp).toLocaleTimeString()}</span>
                 </div>
                 <p>{msg.content}</p>
@@ -173,7 +174,7 @@ export default function SocialSession() {
             <div className="chat-input-row">
               {isSupported && (
                 <button className={`btn btn-icon ${isListening ? 'btn-accent' : 'btn-ghost'}`} onClick={toggleMic}>
-                  {isListening ? '⏹' : '🎤'}
+                  {isListening ? <FaStop /> : <FaMicrophone />}
                 </button>
               )}
               <textarea
@@ -184,7 +185,7 @@ export default function SocialSession() {
                 onKeyDown={handleKeyDown}
                 rows={1}
               />
-              <button className="btn btn-primary btn-icon" onClick={sendMessage} disabled={!inputText.trim() || sending}>➤</button>
+              <button className="btn btn-primary btn-icon" onClick={sendMessage} disabled={!inputText.trim() || sending}><FaPaperPlane /></button>
             </div>
           </div>
         </div>

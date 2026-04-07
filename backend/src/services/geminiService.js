@@ -12,13 +12,17 @@ class GeminiService {
     const prompt = `Generate a thought-provoking debate topic suitable for IT professionals practicing their soft skills. 
     The topic should be relevant to technology, workplace, career, or society.
     
+    IMPORTANT: Keep everything concise. No long paragraphs. Use short, punchy phrases.
+    
     Return ONLY a JSON object with this format:
     {
-      "topic": "The debate topic statement",
-      "context": "Brief context about why this topic is debatable (2-3 sentences)",
-      "forPoints": ["Point 1 for the topic", "Point 2", "Point 3"],
-      "againstPoints": ["Point 1 against the topic", "Point 2", "Point 3"]
-    }`;
+      "topic": "A clear, concise debate topic as a single statement",
+      "context": ["Key context point 1 (one short sentence)", "Key context point 2", "Key context point 3", "Key context point 4"],
+      "forPoints": ["Short point for the topic", "Point 2", "Point 3", "Point 4"],
+      "againstPoints": ["Short point against the topic", "Point 2", "Point 3", "Point 4"]
+    }
+    
+    Each point should be ONE short sentence or phrase, not a paragraph.`;
 
     const result = await this.model.generateContent(prompt);
     const text = result.response.text();
@@ -85,13 +89,17 @@ class GeminiService {
       ? 'This could be a job interview, corporate meeting, conference, or professional networking event.' 
       : 'This could be a casual meetup, team lunch, hackathon, or social gathering.'}
     
+    IMPORTANT: Keep the description as 4-5 short bullet points, NOT a paragraph.
+    
     Return ONLY a JSON object:
     {
-      "scenario": "Brief scenario name (e.g., 'Job Interview at a Tech Startup')",
-      "description": "Detailed description of the setting, who they are meeting, and what is expected (3-4 sentences)",
-      "tips": ["Tip 1 for this scenario", "Tip 2", "Tip 3"],
+      "scenario": "Short scenario title (e.g., 'Job Interview at a Tech Startup')",
+      "description": ["Setting detail (short phrase)", "Who you are meeting", "What is expected", "The tone/vibe"],
+      "tips": ["Tip 1 for this scenario", "Tip 2", "Tip 3", "Tip 4"],
       "durationHint": "Suggested duration (e.g., '30-60 seconds')"
-    }`;
+    }
+    
+    Each point should be ONE short sentence or phrase, not a paragraph.`;
 
     const result = await this.model.generateContent(prompt);
     return this._parseJSON(result.response.text());
@@ -130,15 +138,19 @@ class GeminiService {
     
     This could be pitching a product idea, project proposal, startup concept, or technical solution.
     
+    IMPORTANT: Keep the description as 4-5 short bullet points, NOT a paragraph.
+    
     Return ONLY a JSON object:
     {
-      "scenario": "Brief scenario name (e.g., 'Pitching an AI-Powered HR Tool to VCs')",
-      "description": "Detailed context about what needs to be pitched, to whom, and the stakes (3-4 sentences)",
+      "scenario": "Short scenario title (e.g., 'Pitching an AI-Powered HR Tool to VCs')",
+      "description": ["What needs to be pitched (short phrase)", "Who you're pitching to", "The stakes involved", "The setting/context"],
       "targetAudience": "Who you're pitching to (e.g., 'Venture Capitalists', 'CTO and Engineering Team')",
-      "tips": ["Tip 1", "Tip 2", "Tip 3"],
+      "tips": ["Tip 1", "Tip 2", "Tip 3", "Tip 4"],
       "durationHint": "Suggested duration (e.g., '2-3 minutes')",
-      "keyPointsToHit": ["Key point 1 to cover", "Key point 2", "Key point 3"]
-    }`;
+      "keyPointsToHit": ["Key point 1 to cover", "Key point 2", "Key point 3", "Key point 4"]
+    }
+    
+    Each point should be ONE short sentence or phrase, not a paragraph.`;
 
     const result = await this.model.generateContent(prompt);
     return this._parseJSON(result.response.text());

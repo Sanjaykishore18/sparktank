@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { FaRocket, FaArrowRight, FaMicrophone, FaRobot, FaGamepad, FaChartBar, FaUsers, FaBullseye, FaKhanda, FaCheck, FaStar, FaGlobe, FaXmark, FaBolt } from 'react-icons/fa6';
 import './Landing.css';
 
 export default function Landing() {
@@ -15,8 +16,8 @@ export default function Landing() {
           <div className="orb orb-3" />
         </div>
         <div className="container hero-content">
-          <div className="hero-badge animate-slide-down">
-            <span>🚀</span> AI-Powered Soft Skills Training
+          <div className="hero-badge animate-slide-up">
+            <FaRocket style={{marginRight:'8px', color: 'var(--primary-400)'}}/> AI-Powered Soft Skills Training
           </div>
           <h1 className="hero-title animate-slide-up">
             Master Your <span className="gradient-text">Communication</span> Skills
@@ -29,7 +30,7 @@ export default function Landing() {
           <div className="hero-actions animate-slide-up" style={{animationDelay: '0.2s'}}>
             <Link to={user ? '/dashboard' : '/login'} className="btn btn-primary btn-lg" id="hero-cta">
               {user ? 'Go to Dashboard' : 'Start Training Free'}
-              <span>→</span>
+              <FaArrowRight />
             </Link>
             <a href="#modules" className="btn btn-ghost btn-lg">
               Explore Modules
@@ -47,7 +48,7 @@ export default function Landing() {
             </div>
             <div className="hero-stat-divider" />
             <div className="hero-stat">
-              <span className="hero-stat-value">🎤</span>
+              <span className="hero-stat-value"><FaMicrophone /></span>
               <span className="hero-stat-label">Voice Interaction</span>
             </div>
           </div>
@@ -64,12 +65,12 @@ export default function Landing() {
           </div>
           <div className="features-grid stagger-children">
             {[
-              { icon: '🎙️', title: 'Voice-First Training', desc: 'Speak naturally using your microphone. Our AI listens, understands, and provides real-time feedback on your communication.' },
-              { icon: '🤖', title: 'Gemini AI Engine', desc: 'Powered by Google\'s Gemini AI for intelligent, context-aware analysis of your arguments, grammar, and delivery.' },
-              { icon: '🎮', title: 'Gamified Learning', desc: 'Earn XP, unlock badges, build streaks, and climb the leaderboard. Making skill development addictive and fun.' },
-              { icon: '📊', title: 'Detailed Scoring', desc: 'Get granular feedback across multiple dimensions — grammar, confidence, persuasion, structure, and more.' },
-              { icon: '👥', title: 'Team Sessions', desc: 'Premium users can debate with team members in real-time rooms with AI moderation and collective feedback.' },
-              { icon: '🎯', title: 'Scenario-Based Practice', desc: 'Practice with realistic scenarios — job interviews, investor pitches, tech conferences, and professional networking.' }
+              { icon: <FaMicrophone />, title: 'Voice-First Training', desc: 'Speak naturally using your microphone. Our AI listens, understands, and provides real-time feedback on your communication.' },
+              { icon: <FaRobot />, title: 'Gemini AI Engine', desc: 'Powered by Google\'s Gemini AI for intelligent, context-aware analysis of your arguments, grammar, and delivery.' },
+              { icon: <FaGamepad />, title: 'Gamified Learning', desc: 'Earn XP, unlock badges, build streaks, and climb the leaderboard. Making skill development addictive and fun.' },
+              { icon: <FaChartBar />, title: 'Detailed Scoring', desc: 'Get granular feedback across multiple dimensions — grammar, confidence, persuasion, structure, and more.' },
+              { icon: <FaUsers />, title: 'Team Sessions', desc: 'Premium users can debate with team members in real-time rooms with AI moderation and collective feedback.' },
+              { icon: <FaBullseye />, title: 'Scenario-Based Practice', desc: 'Practice with realistic scenarios — job interviews, investor pitches, tech conferences, and professional networking.' }
             ].map((f, i) => (
               <div className="feature-card glass-card" key={i}>
                 <div className="feature-icon">{f.icon}</div>
@@ -90,33 +91,30 @@ export default function Landing() {
             <p>Comprehensive training for every communication scenario</p>
           </div>
           <div className="modules-grid stagger-children">
-            <div className="module-card glass-card module-debate">
-              <div className="module-number">01</div>
-              <div className="module-icon-wrap"><span>⚔️</span></div>
+            <div className="module-card glass-card">
+              <div className="module-icon-wrap"><span><FaKhanda /></span></div>
               <h3>Debate Arena</h3>
-              <p>Sharpen your argumentation skills by debating AI on thought-provoking topics. Get real-time counter-arguments and post-debate analysis.</p>
-              <div className="module-plans">
-                <span className="badge badge-free">✓ Free: 1-on-1 AI</span>
-                <span className="badge badge-premium">★ Pro: Team Rooms</span>
+              <p>Practice argumentation with AI opponents. Master logical fallacies, structure, and emotional control.</p>
+              <div className="module-badges">
+                <span className="badge badge-free"><FaCheck style={{marginRight:'4px'}}/> Free: 1-on-1 AI</span>
+                <span className="badge badge-premium"><FaStar style={{marginRight:'4px'}}/> Pro: Team Rooms</span>
               </div>
             </div>
-            <div className="module-card glass-card module-intro">
-              <div className="module-number">02</div>
-              <div className="module-icon-wrap"><span>🎤</span></div>
-              <h3>Self Intro & Pitching</h3>
+            <div className="module-card glass-card">
+              <div className="module-icon-wrap"><span><FaMicrophone /></span></div>
+              <h3>Introductions & Pitches</h3>
               <p>Master self-introductions for any scenario — formal interviews to casual meetups. Practice corporate pitching with AI scoring.</p>
-              <div className="module-plans">
-                <span className="badge badge-free">✓ Intro: Free</span>
-                <span className="badge badge-free">✓ Pitching: Free</span>
+              <div className="module-badges">
+                <span className="badge badge-free"><FaCheck style={{marginRight:'4px'}}/> Intro: Free</span>
+                <span className="badge badge-free"><FaCheck style={{marginRight:'4px'}}/> Pitching: Free</span>
               </div>
             </div>
-            <div className="module-card glass-card module-social">
-              <div className="module-number">03</div>
-              <div className="module-icon-wrap"><span>🌐</span></div>
+            <div className="module-card glass-card">
+              <div className="module-icon-wrap"><span><FaGlobe /></span></div>
               <h3>Social & Public Speaking</h3>
-              <p>Build professional connections and master public speaking with AI-assigned challenges and real-time conversational practice.</p>
-              <div className="module-plans">
-                <span className="badge badge-premium">★ Premium Only</span>
+              <p>Build connections and master public speaking with AI-assigned challenges like tech talks and networking events.</p>
+              <div className="module-badges">
+                <span className="badge badge-premium"><FaStar style={{marginRight:'4px'}}/> Premium Only</span>
               </div>
             </div>
           </div>
@@ -142,14 +140,14 @@ export default function Landing() {
                 </div>
               </div>
               <ul className="price-features">
-                <li><span className="check">✓</span> AI Debate Sessions (1-on-1)</li>
-                <li><span className="check">✓</span> Self Introduction Practice</li>
-                <li><span className="check">✓</span> Pitch Practice & Scoring</li>
-                <li><span className="check">✓</span> AI Feedback & Corrections</li>
-                <li><span className="check">✓</span> XP & Badges</li>
-                <li className="disabled"><span className="cross">✕</span> Team Debate Rooms</li>
-                <li className="disabled"><span className="cross">✕</span> Social/Public Speaking</li>
-                <li className="disabled"><span className="cross">✕</span> Build Connections</li>
+                <li><span className="check"><FaCheck /></span> AI Debate Sessions (1-on-1)</li>
+                <li><span className="check"><FaCheck /></span> Self Introduction Practice</li>
+                <li><span className="check"><FaCheck /></span> Pitch Practice & Scoring</li>
+                <li><span className="check"><FaCheck /></span> AI Feedback & Corrections</li>
+                <li><span className="check"><FaCheck /></span> XP & Badges</li>
+                <li className="disabled"><span className="cross"><FaXmark /></span> Team Debate Rooms</li>
+                <li className="disabled"><span className="cross"><FaXmark /></span> Social/Public Speaking</li>
+                <li className="disabled"><span className="cross"><FaXmark /></span> Build Connections</li>
               </ul>
               <Link to="/login" className="btn btn-ghost w-full">Get Started</Link>
             </div>
@@ -164,13 +162,13 @@ export default function Landing() {
                 </div>
               </div>
               <ul className="price-features">
-                <li><span className="check">✓</span> Everything in Free</li>
-                <li><span className="check accent">✓</span> Team Debate Rooms</li>
-                <li><span className="check accent">✓</span> Social Skills Training</li>
-                <li><span className="check accent">✓</span> Public Speaking Challenges</li>
-                <li><span className="check accent">✓</span> Build Connections Mode</li>
-                <li><span className="check accent">✓</span> Priority AI Processing</li>
-                <li><span className="check accent">✓</span> Advanced Analytics</li>
+                <li><span className="check"><FaCheck /></span> Everything in Free</li>
+                <li><span className="check accent"><FaCheck /></span> Team Debate Rooms</li>
+                <li><span className="check accent"><FaCheck /></span> Social Skills Training</li>
+                <li><span className="check accent"><FaCheck /></span> Public Speaking Challenges</li>
+                <li><span className="check accent"><FaCheck /></span> Build Connections Mode</li>
+                <li><span className="check accent"><FaCheck /></span> Priority AI Processing</li>
+                <li><span className="check accent"><FaCheck /></span> Advanced Analytics</li>
               </ul>
               <Link to="/login" className="btn btn-primary w-full">Upgrade to Pro</Link>
             </div>
@@ -183,7 +181,7 @@ export default function Landing() {
         <div className="container">
           <div className="footer-content">
             <div className="footer-brand">
-              <span className="brand-icon">⚡</span>
+              <span className="brand-icon"><FaBolt /></span>
               <span className="brand-text">Speak<span className="brand-accent">X</span></span>
             </div>
             <p>AI-powered soft skills training for IT professionals</p>

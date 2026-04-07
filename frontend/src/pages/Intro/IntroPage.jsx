@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FaMicrophone, FaUserTie, FaHandshake, FaStopwatch, FaLightbulb, FaStop, FaChartBar, FaStar, FaPen, FaXmark, FaCheck, FaArrowRight } from 'react-icons/fa6';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 import api from '../../services/api';
 import './Intro.css';
@@ -79,7 +80,7 @@ export default function IntroPage() {
     <div className="intro-page page" id="intro-page">
       <div className="container">
         <div className="page-header animate-slide-up">
-          <div className="page-header-icon" style={{background: 'rgba(16, 185, 129, 0.15)', borderColor: 'rgba(16, 185, 129, 0.2)'}}>🎤</div>
+          <div className="page-header-icon" style={{background: 'rgba(16, 185, 129, 0.15)', borderColor: 'rgba(16, 185, 129, 0.2)'}}><FaMicrophone /></div>
           <div>
             <h1>Self Introduction</h1>
             <p>Practice scenario-based introductions — formal and informal. Completely free!</p>
@@ -90,13 +91,13 @@ export default function IntroPage() {
         {!type && (
           <div className="intro-type-select animate-slide-up" style={{animationDelay: '0.1s'}}>
             <div className="type-card glass-card" onClick={() => generateScenario('formal')} id="formal-intro-btn">
-              <span className="type-icon">👔</span>
+              <span className="type-icon"><FaUserTie /></span>
               <h3>Formal Introduction</h3>
               <p>Job interviews, corporate meetings, conferences, professional networking</p>
               <span className="badge badge-primary">Professional</span>
             </div>
             <div className="type-card glass-card" onClick={() => generateScenario('informal')} id="informal-intro-btn">
-              <span className="type-icon">🤝</span>
+              <span className="type-icon"><FaHandshake /></span>
               <h3>Informal Introduction</h3>
               <p>Team meetups, hackathons, casual gatherings, social events</p>
               <span className="badge badge-success">Casual</span>
@@ -118,13 +119,13 @@ export default function IntroPage() {
             <div className="scenario-card glass-card">
               <div className="scenario-header">
                 <span className="badge badge-primary">{type}</span>
-                <span className="scenario-duration">⏱ {scenario.durationHint}</span>
+                <span className="scenario-duration"><FaStopwatch style={{marginRight:'4px'}}/> {scenario.durationHint}</span>
               </div>
               <h3>{scenario.scenario}</h3>
               <p>{scenario.description}</p>
               {scenario.tips && (
                 <div className="scenario-tips">
-                  <h5>💡 Tips:</h5>
+                  <h5><FaLightbulb style={{marginRight:'6px'}}/> Tips:</h5>
                   <ul>
                     {scenario.tips.map((tip, i) => <li key={i}>{tip}</li>)}
                   </ul>
@@ -133,7 +134,7 @@ export default function IntroPage() {
             </div>
 
             <div className="practice-area glass-card">
-              <h3>🎤 Your Introduction</h3>
+              <h3><FaMicrophone style={{marginRight:'6px'}}/> Your Introduction</h3>
               <p>Speak using the microphone or type your introduction below.</p>
 
               {isListening && (
@@ -156,7 +157,7 @@ export default function IntroPage() {
               <div className="practice-actions">
                 {isSupported && (
                   <button className={`btn ${isListening ? 'btn-accent' : 'btn-ghost'}`} onClick={toggleMic} id="intro-mic-btn">
-                    {isListening ? '⏹ Stop Recording' : '🎤 Start Recording'}
+                    {isListening ? <><FaStop style={{marginRight:'6px'}}/> Stop Recording</> : <><FaMicrophone style={{marginRight:'6px'}}/> Start Recording</>}
                   </button>
                 )}
                 <button
@@ -167,7 +168,7 @@ export default function IntroPage() {
                 >
                   {evaluating ? (
                     <><span className="spinner" style={{width: 20, height: 20, borderWidth: 2}} /> Evaluating...</>
-                  ) : '📊 Get AI Feedback'}
+                  ) : <><FaChartBar style={{marginRight:'6px'}}/> Get AI Feedback</>}
                 </button>
               </div>
             </div>
@@ -178,13 +179,13 @@ export default function IntroPage() {
         {feedback && (
           <div className="feedback-card glass-card animate-scale-in" style={{maxWidth: 800, margin: '0 auto'}}>
             <div className="feedback-header">
-              <h2>📊 Introduction Feedback</h2>
+              <h2><FaChartBar style={{marginRight:'6px'}}/> Introduction Feedback</h2>
               <p>{scenario?.scenario}</p>
             </div>
 
             <div className="feedback-xp">
               <div className="xp-earned animate-float">
-                <span className="xp-icon">✨</span>
+                <span className="xp-icon"><FaStar /></span>
                 <span className="xp-amount">+{xpEarned} XP</span>
               </div>
             </div>
@@ -213,20 +214,20 @@ export default function IntroPage() {
 
             {feedback.improvedVersion && (
               <div className="improved-version">
-                <h4>✨ Improved Version</h4>
+                <h4><FaStar style={{marginRight:'6px'}}/> Improved Version</h4>
                 <p>{feedback.improvedVersion}</p>
               </div>
             )}
 
             {feedback.corrections?.length > 0 && (
               <div className="feedback-section">
-                <h4>✏️ Corrections</h4>
+                <h4><FaPen style={{marginRight:'6px'}}/> Corrections</h4>
                 <div className="corrections-list">
                   {feedback.corrections.map((c, i) => (
                     <div key={i} className="correction-item">
-                      <div className="correction-original">❌ {c.original}</div>
-                      <div className="correction-fixed">✅ {c.corrected}</div>
-                      <div className="correction-explain">💡 {c.explanation}</div>
+                      <div className="correction-original"><FaXmark style={{marginRight:'6px', color:'var(--error-400)'}}/> {c.original}</div>
+                      <div className="correction-fixed"><FaCheck style={{marginRight:'6px', color:'var(--success-400)'}}/> {c.corrected}</div>
+                      <div className="correction-explain"><FaLightbulb style={{marginRight:'6px', color:'var(--warning-400)'}}/> {c.explanation}</div>
                     </div>
                   ))}
                 </div>
@@ -235,13 +236,13 @@ export default function IntroPage() {
 
             {feedback.suggestions?.length > 0 && (
               <div className="feedback-section">
-                <h4>💡 Suggestions</h4>
+                <h4><FaLightbulb style={{marginRight:'6px'}}/> Suggestions</h4>
                 <ul>{feedback.suggestions.map((s, i) => <li key={i}>{s}</li>)}</ul>
               </div>
             )}
 
             <div className="feedback-actions">
-              <button onClick={reset} className="btn btn-primary btn-lg">Try Another →</button>
+              <button onClick={reset} className="btn btn-primary btn-lg">Try Another <FaArrowRight style={{marginLeft:'6px'}}/></button>
               <button onClick={() => window.location.href = '/dashboard'} className="btn btn-ghost btn-lg">Dashboard</button>
             </div>
           </div>

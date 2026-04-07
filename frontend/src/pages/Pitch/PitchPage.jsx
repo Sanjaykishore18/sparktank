@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FaBullseye, FaBolt, FaStopwatch, FaClipboardList, FaLightbulb, FaMicrophone, FaStop, FaChartBar, FaStar, FaDumbbell, FaChartLine, FaArrowRight } from 'react-icons/fa6';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 import api from '../../services/api';
 import '../Intro/Intro.css';
@@ -73,7 +74,7 @@ export default function PitchPage() {
     <div className="intro-page page" id="pitch-page">
       <div className="container">
         <div className="page-header animate-slide-up">
-          <div className="page-header-icon" style={{background: 'rgba(255, 92, 10, 0.15)', borderColor: 'rgba(255, 92, 10, 0.2)'}}>🎯</div>
+          <div className="page-header-icon" style={{background: 'rgba(255, 92, 10, 0.15)', borderColor: 'rgba(255, 92, 10, 0.2)'}}><FaBullseye /></div>
           <div>
             <h1>Pitch Practice</h1>
             <p>Master corporate pitching with AI-generated scenarios and detailed scoring. Free!</p>
@@ -84,13 +85,13 @@ export default function PitchPage() {
         {!scenario && !feedback && (
           <div className="debate-setup glass-card animate-slide-up" style={{animationDelay: '0.1s'}}>
             <div className="setup-header">
-              <h3>🎯 Generate a Pitch Scenario</h3>
+              <h3><FaBullseye style={{marginRight:'6px'}}/>Generate a Pitch Scenario</h3>
               <p>AI will create a realistic corporate pitching scenario for you to practice.</p>
             </div>
             <button className="btn btn-accent btn-lg" onClick={generateScenario} disabled={loadingScenario} id="generate-pitch-btn">
               {loadingScenario ? (
                 <><span className="spinner" style={{width: 20, height: 20, borderWidth: 2}} /> Generating...</>
-              ) : '⚡ Generate Scenario'}
+              ) : <><FaBolt style={{marginRight:'6px'}}/> Generate Scenario</>}
             </button>
           </div>
         )}
@@ -101,22 +102,22 @@ export default function PitchPage() {
             <div className="scenario-card glass-card">
               <div className="scenario-header">
                 <span className="badge badge-accent">Pitch Challenge</span>
-                <span className="scenario-duration">⏱ {scenario.durationHint}</span>
+                <span className="scenario-duration"><FaStopwatch style={{marginRight:'4px'}}/> {scenario.durationHint}</span>
               </div>
               <h3>{scenario.scenario}</h3>
               <p>{scenario.description}</p>
               <div style={{marginTop: 'var(--space-3)'}}>
-                <span className="badge badge-primary">🎯 Target: {scenario.targetAudience}</span>
+                <span className="badge badge-primary"><FaBullseye style={{marginRight:'4px'}}/> Target: {scenario.targetAudience}</span>
               </div>
               {scenario.keyPointsToHit && (
                 <div className="scenario-tips" style={{marginTop: 'var(--space-4)'}}>
-                  <h5>📋 Key Points to Cover:</h5>
+                  <h5><FaClipboardList style={{marginRight:'6px'}}/>Key Points to Cover:</h5>
                   <ul>{scenario.keyPointsToHit.map((p, i) => <li key={i}>{p}</li>)}</ul>
                 </div>
               )}
               {scenario.tips && (
                 <div className="scenario-tips" style={{marginTop: 'var(--space-3)'}}>
-                  <h5>💡 Tips:</h5>
+                  <h5><FaLightbulb style={{marginRight:'6px'}}/>Tips:</h5>
                   <ul>{scenario.tips.map((t, i) => <li key={i}>{t}</li>)}</ul>
                 </div>
               )}
@@ -143,11 +144,11 @@ export default function PitchPage() {
               <div className="practice-actions">
                 {isSupported && (
                   <button className={`btn ${isListening ? 'btn-accent' : 'btn-ghost'}`} onClick={toggleMic}>
-                    {isListening ? '⏹ Stop' : '🎤 Record'}
+                    {isListening ? <><FaStop style={{marginRight:'6px'}}/> Stop</> : <><FaMicrophone style={{marginRight:'6px'}}/> Record</>}
                   </button>
                 )}
                 <button className="btn btn-accent btn-lg" onClick={submitPitch} disabled={evaluating || (!userPitch.trim() && !transcript.trim())} id="submit-pitch-btn">
-                  {evaluating ? <><span className="spinner" style={{width: 20, height: 20, borderWidth: 2}} /> Evaluating...</> : '📊 Get AI Score'}
+                  {evaluating ? <><span className="spinner" style={{width: 20, height: 20, borderWidth: 2}} /> Evaluating...</> : <><FaChartBar style={{marginRight:'6px'}}/> Get AI Score</>}
                 </button>
               </div>
             </div>
@@ -158,13 +159,13 @@ export default function PitchPage() {
         {feedback && (
           <div className="feedback-card glass-card animate-scale-in" style={{maxWidth: 800, margin: '0 auto'}}>
             <div className="feedback-header">
-              <h2>📊 Pitch Scorecard</h2>
+              <h2><FaChartBar style={{marginRight:'6px'}}/>Pitch Scorecard</h2>
               <p>{scenario?.scenario}</p>
             </div>
 
             <div className="feedback-xp">
               <div className="xp-earned animate-float">
-                <span className="xp-icon">✨</span>
+                <span className="xp-icon"><FaStar /></span>
                 <span className="xp-amount">+{xpEarned} XP</span>
               </div>
             </div>
@@ -194,7 +195,7 @@ export default function PitchPage() {
 
             {feedback.improvedVersion && (
               <div className="improved-version">
-                <h4>✨ Improved Pitch</h4>
+                <h4><FaStar style={{marginRight:'6px'}}/>Improved Pitch</h4>
                 <p>{feedback.improvedVersion}</p>
               </div>
             )}
@@ -202,13 +203,13 @@ export default function PitchPage() {
             <div className="feedback-grid">
               {feedback.strengths?.length > 0 && (
                 <div className="feedback-section">
-                  <h4>💪 Strengths</h4>
+                  <h4><FaDumbbell style={{marginRight:'6px'}}/>Strengths</h4>
                   <ul>{feedback.strengths.map((s, i) => <li key={i}>{s}</li>)}</ul>
                 </div>
               )}
               {feedback.areasToImprove?.length > 0 && (
                 <div className="feedback-section">
-                  <h4>📈 Improve</h4>
+                  <h4><FaChartLine style={{marginRight:'6px'}}/>Improve</h4>
                   <ul>{feedback.areasToImprove.map((s, i) => <li key={i}>{s}</li>)}</ul>
                 </div>
               )}
@@ -216,13 +217,13 @@ export default function PitchPage() {
 
             {feedback.suggestions?.length > 0 && (
               <div className="feedback-section">
-                <h4>💡 Suggestions</h4>
+                <h4><FaLightbulb style={{marginRight:'6px'}}/>Suggestions</h4>
                 <ul>{feedback.suggestions.map((s, i) => <li key={i}>{s}</li>)}</ul>
               </div>
             )}
 
             <div className="feedback-actions">
-              <button onClick={reset} className="btn btn-accent btn-lg">Try Another →</button>
+              <button onClick={reset} className="btn btn-accent btn-lg">Try Another <FaArrowRight style={{marginLeft:'6px'}}/></button>
               <button onClick={() => window.location.href = '/dashboard'} className="btn btn-ghost btn-lg">Dashboard</button>
             </div>
           </div>

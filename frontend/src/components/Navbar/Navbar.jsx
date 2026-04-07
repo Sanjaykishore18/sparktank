@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { FaBolt, FaStar, FaFire } from 'react-icons/fa6';
 import { useAuth } from '../../context/AuthContext';
 import './Navbar.css';
 
@@ -11,7 +12,7 @@ export default function Navbar() {
     <nav className="navbar" id="main-navbar">
       <div className="navbar-inner container">
         <Link to={user ? '/dashboard' : '/'} className="navbar-brand">
-          <span className="brand-icon">⚡</span>
+          <span className="brand-icon"><FaBolt /></span>
           <span className="brand-text">Speak<span className="brand-accent">X</span></span>
         </Link>
 
@@ -27,11 +28,11 @@ export default function Navbar() {
           {user ? (
             <>
               <div className="nav-xp">
-                <span className="nav-xp-icon">✨</span>
+                <span className="nav-xp-icon"><FaStar /></span>
                 <span className="nav-xp-value">{user.xp || 0} XP</span>
               </div>
               <div className="nav-streak">
-                <span className="nav-streak-icon">🔥</span>
+                <span className="nav-streak-icon"><FaFire /></span>
                 <span>{user.streak || 0}</span>
               </div>
               {user.plan === 'premium' && (

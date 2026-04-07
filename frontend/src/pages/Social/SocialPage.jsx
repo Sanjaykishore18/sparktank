@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FaGlobe, FaStar, FaHandshake, FaMicrophone, FaStopwatch, FaRobot, FaBullseye, FaLightbulb, FaRocket } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
@@ -49,11 +50,11 @@ export default function SocialPage() {
     <div className="social-page page" id="social-page">
       <div className="container">
         <div className="page-header animate-slide-up">
-          <div className="page-header-icon" style={{background: 'rgba(232, 121, 249, 0.15)', borderColor: 'rgba(232, 121, 249, 0.2)'}}>🌐</div>
+          <div className="page-header-icon" style={{background: 'rgba(232, 121, 249, 0.15)', borderColor: 'rgba(232, 121, 249, 0.2)'}}><FaGlobe /></div>
           <div>
             <h1>Social & Public Speaking</h1>
             <p>Build professional connections and master public speaking with AI challenges.</p>
-            <span className="badge badge-premium" style={{marginTop: 8}}>★ Premium Feature</span>
+            <span className="badge badge-premium" style={{marginTop: 8}}><FaStar style={{marginRight: '4px'}} /> Premium Feature</span>
           </div>
         </div>
 
@@ -61,16 +62,16 @@ export default function SocialPage() {
         {!taskType && (
           <div className="intro-type-select animate-slide-up" style={{animationDelay: '0.1s'}}>
             <div className="type-card glass-card" onClick={() => generateTask('build_connections')} id="connections-btn">
-              <span className="type-icon">🤝</span>
+              <span className="type-icon"><FaHandshake /></span>
               <h3>Build Connections</h3>
               <p>Practice initiating and maintaining professional conversations with strangers.</p>
-              <span className="badge badge-premium">★ Premium</span>
+              <span className="badge badge-premium"><FaStar style={{marginRight: '2px'}}/> Premium</span>
             </div>
             <div className="type-card glass-card" onClick={() => generateTask('public_speaking')} id="speaking-btn">
-              <span className="type-icon">🎤</span>
+              <span className="type-icon"><FaMicrophone /></span>
               <h3>Public Speaking</h3>
               <p>Take on public speaking challenges — tech talks, presentations, and impromptu speeches.</p>
-              <span className="badge badge-premium">★ Premium</span>
+              <span className="badge badge-premium"><FaStar style={{marginRight: '2px'}}/> Premium</span>
             </div>
           </div>
         )}
@@ -85,29 +86,31 @@ export default function SocialPage() {
         {task && (
           <div className="social-task-card glass-card animate-scale-in">
             <div className="scenario-header">
-              <span className="badge badge-premium">{taskType === 'build_connections' ? '🤝 Connection' : '🎤 Speaking'}</span>
-              <span className="scenario-duration">⏱ {task.durationHint}</span>
+              <span className="badge badge-premium">
+                {taskType === 'build_connections' ? <><FaHandshake style={{marginRight: '4px'}}/> Connection</> : <><FaMicrophone style={{marginRight: '4px'}}/> Speaking</>}
+              </span>
+              <span className="scenario-duration"><FaStopwatch style={{marginRight: '4px'}}/> {task.durationHint}</span>
             </div>
             <h3>{task.task}</h3>
             <p>{task.description}</p>
             <div className="social-role">
-              <h5>🤖 AI will play:</h5>
+              <h5><FaRobot style={{marginRight: '6px'}}/>AI will play:</h5>
               <p>{task.aiRole}</p>
             </div>
             {task.objectives && (
               <div className="scenario-tips">
-                <h5>🎯 Objectives:</h5>
+                <h5><FaBullseye style={{marginRight: '6px'}}/>Objectives:</h5>
                 <ul>{task.objectives.map((o, i) => <li key={i}>{o}</li>)}</ul>
               </div>
             )}
             {task.tips && (
               <div className="scenario-tips" style={{marginTop: 'var(--space-3)'}}>
-                <h5>💡 Tips:</h5>
+                <h5><FaLightbulb style={{marginRight: '6px'}}/>Tips:</h5>
                 <ul>{task.tips.map((t, i) => <li key={i}>{t}</li>)}</ul>
               </div>
             )}
             <button className="btn btn-primary btn-lg w-full" onClick={startSession} disabled={starting} style={{marginTop: 'var(--space-6)'}} id="start-social-btn">
-              {starting ? 'Starting...' : '🚀 Start Challenge'}
+              {starting ? 'Starting...' : <><FaRocket style={{marginRight: '8px'}}/> Start Challenge</>}
             </button>
           </div>
         )}

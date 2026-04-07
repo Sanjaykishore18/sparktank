@@ -39,10 +39,10 @@
   font-size: 1.5rem;
 }
 
-.stat-level { background: rgba(108, 43, 252, 0.15); }
-.stat-xp { background: rgba(255, 170, 0, 0.15); }
-.stat-streak { background: rgba(255, 92, 10, 0.15); }
-.stat-badges { background: rgba(16, 185, 129, 0.15); }
+.stat-level { background: rgba(67, 91, 159, 0.1); }
+.stat-xp { background: rgba(251, 191, 36, 0.1); }
+.stat-streak { background: rgba(92, 93, 120, 0.1); }
+.stat-badges { background: rgba(16, 185, 129, 0.1); }
 
 .stat-info {
   display: flex;
@@ -118,7 +118,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(5, 5, 16, 0.6);
+  background: rgba(249, 249, 249, 0.75);
   backdrop-filter: blur(4px);
   z-index: 5;
   font-weight: 600;
@@ -156,7 +156,7 @@
   align-items: center;
   justify-content: space-between;
   padding-top: var(--space-3);
-  border-top: 1px solid var(--surface-glass-border);
+  border-top: 1px solid rgba(67, 91, 159, 0.06);
 }
 
 .module-stat {

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaArrowLeft, FaArrowRight, FaWandMagicSparkles } from 'react-icons/fa6';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import threeService from '../../services/threeService';
@@ -174,8 +175,8 @@ export default function AvatarCreator() {
   return (
     <div className="avatar-creator-page page">
       <div className="navbar glass-card">
-        <div className="nav-logo">Skill<span>Forge</span></div>
-        <button className="btn btn-ghost" onClick={() => navigate('/dashboard')}>← Cancel</button>
+        <div className="nav-logo" style={{fontWeight: 800, fontSize: '1.25rem'}}>Speak<span style={{color:'var(--primary-400)'}}>X</span></div>
+        <button className="btn btn-ghost" onClick={() => navigate('/dashboard')}><FaArrowLeft style={{marginRight:'6px'}}/> Cancel</button>
       </div>
 
       <div className="avatar-layout">
@@ -258,7 +259,7 @@ export default function AvatarCreator() {
             onClick={handleSave}
             disabled={saving}
           >
-            {saving ? 'Saving...' : '✦ Save Avatar & Continue →'}
+            {saving ? 'Saving...' : <><FaWandMagicSparkles style={{marginRight:'6px'}}/> Save Avatar & Continue <FaArrowRight style={{marginLeft:'6px'}}/></>}
           </button>
         </div>
       </div>

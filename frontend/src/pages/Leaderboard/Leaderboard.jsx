@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { FaMedal, FaFire } from 'react-icons/fa6';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
 import './Leaderboard.css';
@@ -21,10 +22,10 @@ export default function Leaderboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  const getRankEmoji = (rank) => {
-    if (rank === 1) return '🥇';
-    if (rank === 2) return '🥈';
-    if (rank === 3) return '🥉';
+  const getRankIndicator = (rank) => {
+    if (rank === 1) return <FaMedal style={{color: '#ffd700'}}/>;
+    if (rank === 2) return <FaMedal style={{color: '#c0c0c0'}}/>;
+    if (rank === 3) return <FaMedal style={{color: '#cd7f32'}}/>;
     return `#${rank}`;
   };
 
@@ -32,7 +33,7 @@ export default function Leaderboard() {
     <div className="leaderboard-page page" id="leaderboard-page">
       <div className="container">
         <div className="page-header animate-slide-up">
-          <div className="page-header-icon" style={{background: 'rgba(255, 170, 0, 0.15)', borderColor: 'rgba(255, 170, 0, 0.2)'}}>🏅</div>
+          <div className="page-header-icon" style={{background: 'rgba(255, 170, 0, 0.15)', borderColor: 'rgba(255, 170, 0, 0.2)'}}><FaMedal /></div>
           <div>
             <h1>Leaderboard</h1>
             <p>Compete with fellow IT professionals. XP determines your ranking!</p>
@@ -54,7 +55,7 @@ export default function Leaderboard() {
             </div>
             {leaderboard.map((entry) => (
               <div key={entry.id} className={`lb-row ${entry.isCurrentUser ? 'lb-row-you' : ''}`}>
-                <span className="lb-col-rank lb-rank">{getRankEmoji(entry.rank)}</span>
+                <span className="lb-col-rank lb-rank">{getRankIndicator(entry.rank)}</span>
                 <div className="lb-col-user lb-user">
                   <div className="lb-avatar">
                     {entry.avatar ? <img src={entry.avatar} alt="" /> : <span>{entry.name?.charAt(0)}</span>}
@@ -64,7 +65,7 @@ export default function Leaderboard() {
                   </span>
                 </div>
                 <span className="lb-col-level">{entry.level}</span>
-                <span className="lb-col-streak">🔥 {entry.streak}</span>
+                <span className="lb-col-streak"><FaFire style={{marginRight:'4px', color:'var(--error-400)'}}/> {entry.streak}</span>
                 <span className="lb-col-xp lb-xp">{entry.xp?.toLocaleString()} XP</span>
               </div>
             ))}

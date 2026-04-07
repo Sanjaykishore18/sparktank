@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { FaTrophy, FaStar, FaDumbbell, FaChartLine, FaPen, FaXmark, FaCheck, FaLightbulb, FaArrowRight, FaThumbsUp, FaThumbsDown, FaStopwatch, FaCommentDots, FaFlagCheckered, FaStop, FaMicrophone, FaPaperPlane } from 'react-icons/fa6';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 import { useAuth } from '../../context/AuthContext';
 import * as THREE from 'three';
@@ -197,14 +198,14 @@ export default function DebateSession() {
         <div className="container">
           <div className="feedback-card glass-card animate-scale-in">
             <div className="feedback-header">
-              <h2>🎉 Debate Complete!</h2>
+              <h2><FaTrophy style={{marginRight:'6px'}}/> Debate Complete!</h2>
               <p>Topic: {session.topic}</p>
             </div>
 
             {/* XP and Badges */}
             <div className="feedback-xp">
               <div className="xp-earned animate-float">
-                <span className="xp-icon">✨</span>
+                <span className="xp-icon"><FaStar /></span>
                 <span className="xp-amount">+{xpEarned} XP</span>
               </div>
               {newBadges.length > 0 && (
@@ -247,7 +248,7 @@ export default function DebateSession() {
             <div className="feedback-grid">
               {feedback.strengths?.length > 0 && (
                 <div className="feedback-section">
-                  <h4>💪 Strengths</h4>
+                  <h4><FaDumbbell style={{marginRight:'6px'}}/> Strengths</h4>
                   <ul>
                     {feedback.strengths.map((s, i) => <li key={i}>{s}</li>)}
                   </ul>
@@ -255,7 +256,7 @@ export default function DebateSession() {
               )}
               {feedback.areasToImprove?.length > 0 && (
                 <div className="feedback-section">
-                  <h4>📈 Areas to Improve</h4>
+                  <h4><FaChartLine style={{marginRight:'6px'}}/> Areas to Improve</h4>
                   <ul>
                     {feedback.areasToImprove.map((s, i) => <li key={i}>{s}</li>)}
                   </ul>
@@ -266,13 +267,13 @@ export default function DebateSession() {
             {/* Corrections */}
             {feedback.corrections?.length > 0 && (
               <div className="feedback-section">
-                <h4>✏️ Corrections</h4>
+                <h4><FaPen style={{marginRight:'6px'}}/> Corrections</h4>
                 <div className="corrections-list">
                   {feedback.corrections.map((c, i) => (
                     <div key={i} className="correction-item">
-                      <div className="correction-original">❌ {c.original}</div>
-                      <div className="correction-fixed">✅ {c.corrected}</div>
-                      <div className="correction-explain">💡 {c.explanation}</div>
+                      <div className="correction-original"><FaXmark style={{marginRight:'6px', color:'var(--error-400)'}}/> {c.original}</div>
+                      <div className="correction-fixed"><FaCheck style={{marginRight:'6px', color:'var(--success-400)'}}/> {c.corrected}</div>
+                      <div className="correction-explain"><FaLightbulb style={{marginRight:'6px', color:'var(--warning-400)'}}/> {c.explanation}</div>
                     </div>
                   ))}
                 </div>
@@ -282,7 +283,7 @@ export default function DebateSession() {
             {/* Suggestions */}
             {feedback.suggestions?.length > 0 && (
               <div className="feedback-section">
-                <h4>💡 Suggestions</h4>
+                <h4><FaLightbulb style={{marginRight:'6px'}}/> Suggestions</h4>
                 <ul>
                   {feedback.suggestions.map((s, i) => <li key={i}>{s}</li>)}
                 </ul>
@@ -291,7 +292,7 @@ export default function DebateSession() {
 
             <div className="feedback-actions">
               <button onClick={() => navigate('/debate')} className="btn btn-primary btn-lg">
-                New Debate →
+                New Debate <FaArrowRight style={{marginLeft:'6px'}}/>
               </button>
               <button onClick={() => navigate('/dashboard')} className="btn btn-ghost btn-lg">
                 Back to Dashboard
@@ -310,12 +311,12 @@ export default function DebateSession() {
         <div className="session-header glass-card">
           <div className="session-info">
             <h3>{session.topic}</h3>
-            <div className="session-meta">
-              <span className={`badge ${session.userStance === 'for' ? 'badge-success' : 'badge-accent'}`}>
-                {session.userStance === 'for' ? '👍 For' : '👎 Against'}
+            <div className="session-stance">
+              <span className={`badge ${session.userStance === 'for' ? 'badge-success' : 'badge-error'}`}>
+                {session.userStance === 'for' ? <><FaThumbsUp style={{marginRight:'4px'}}/> For</> : <><FaThumbsDown style={{marginRight:'4px'}}/> Against</>}
               </span>
-              <span className="session-timer">⏱ {formatTime(timer)}</span>
-              <span className="session-msgs">💬 {messages.length} messages</span>
+              <span className="session-timer"><FaStopwatch style={{marginRight:'4px'}}/> {formatTime(timer)}</span>
+              <span className="session-msgs"><FaCommentDots style={{marginRight:'4px'}}/> {messages.length} messages</span>
             </div>
           </div>
           <button 
@@ -324,7 +325,7 @@ export default function DebateSession() {
             disabled={ending || messages.length < 2}
             id="end-debate-btn"
           >
-            {ending ? 'Evaluating...' : '🏁 End & Evaluate'}
+            {ending ? 'Evaluating...' : <><FaFlagCheckered style={{marginRight:'6px'}}/> End & Evaluate</>}
           </button>
         </div>
 
@@ -379,10 +380,12 @@ export default function DebateSession() {
                 <div className="chat-input-row">
                   {isSupported && (
                     <button
+                      type="button"
                       className={`btn btn-icon btn-sm ${isListening ? 'btn-accent' : 'btn-ghost'}`}
                       onClick={toggleMic}
+                      id="debate-mic-btn"
                     >
-                      {isListening ? '⏹' : '🎤'}
+                      {isListening ? <FaStop /> : <FaMicrophone />}
                     </button>
                   )}
                   <textarea
@@ -394,11 +397,13 @@ export default function DebateSession() {
                     rows={1}
                   />
                   <button
+                    type="submit"
                     className="btn btn-primary btn-icon btn-sm"
                     onClick={sendMessage}
                     disabled={!inputText.trim() || sending}
+                    id="send-msg-btn"
                   >
-                    ➤
+                    <FaPaperPlane />
                   </button>
                 </div>
               </div>

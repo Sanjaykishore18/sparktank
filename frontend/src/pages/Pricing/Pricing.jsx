@@ -1,4 +1,5 @@
 import { useAuth } from '../../context/AuthContext';
+import { FaCheck, FaXmark, FaArrowRight } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import '../Landing/Landing.css';
 
@@ -35,13 +36,13 @@ export default function Pricing() {
               </div>
             </div>
             <ul className="price-features">
-              <li><span className="check">✓</span> AI Debate Sessions (1-on-1)</li>
-              <li><span className="check">✓</span> Self Introduction Practice</li>
-              <li><span className="check">✓</span> Pitch Practice & Scoring</li>
-              <li><span className="check">✓</span> AI Feedback & Corrections</li>
-              <li><span className="check">✓</span> XP & Badges</li>
-              <li className="disabled"><span className="cross">✕</span> Team Debate Rooms</li>
-              <li className="disabled"><span className="cross">✕</span> Social/Public Speaking</li>
+              <li><span className="check"><FaCheck /></span> AI Debate Sessions (1-on-1)</li>
+              <li><span className="check"><FaCheck /></span> Self Introduction Practice</li>
+              <li><span className="check"><FaCheck /></span> Pitch Practice & Scoring</li>
+              <li><span className="check"><FaCheck /></span> AI Feedback & Corrections</li>
+              <li><span className="check"><FaCheck /></span> XP & Badges</li>
+              <li className="disabled"><span className="cross"><FaXmark /></span> Team Debate Rooms</li>
+              <li className="disabled"><span className="cross"><FaXmark /></span> Social/Public Speaking</li>
             </ul>
             {user?.plan === 'free' ? (
               <button className="btn btn-ghost w-full" disabled>Current Plan</button>
@@ -61,18 +62,18 @@ export default function Pricing() {
               </div>
             </div>
             <ul className="price-features">
-              <li><span className="check">✓</span> Everything in Free</li>
-              <li><span className="check accent">✓</span> Team Debate Rooms</li>
-              <li><span className="check accent">✓</span> Social Skills Training</li>
-              <li><span className="check accent">✓</span> Public Speaking</li>
-              <li><span className="check accent">✓</span> Build Connections</li>
-              <li><span className="check accent">✓</span> Priority AI</li>
+              <li><span className="check"><FaCheck /></span> Everything in Free</li>
+              <li><span className="check accent"><FaCheck /></span> Team Debate Rooms</li>
+              <li><span className="check accent"><FaCheck /></span> Social Skills Training</li>
+              <li><span className="check accent"><FaCheck /></span> Public Speaking</li>
+              <li><span className="check accent"><FaCheck /></span> Build Connections</li>
+              <li><span className="check accent"><FaCheck /></span> Priority AI</li>
             </ul>
             {user?.plan === 'premium' ? (
-              <button className="btn btn-primary w-full" disabled>Current Plan ✓</button>
+              <button className="btn btn-primary w-full" disabled>Current Plan <FaCheck style={{marginLeft: '4px'}}/></button>
             ) : (
-              <button className="btn btn-primary w-full" onClick={handleUpgrade}>
-                Upgrade to Pro →
+              <button className="btn btn-primary w-full shadow-glow" onClick={handleUpgrade}>
+                Upgrade to Pro <FaArrowRight style={{marginLeft: '4px'}}/>
               </button>
             )}
           </div>

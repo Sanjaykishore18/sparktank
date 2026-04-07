@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { FaThumbsUp, FaThumbsDown, FaHeadphones, FaVolumeXmark, FaMicrophone, FaPhoneSlash, FaClipboard, FaDoorOpen, FaUsers, FaPaperPlane } from 'react-icons/fa6';
 import { io } from 'socket.io-client';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
@@ -306,8 +307,8 @@ export default function TeamDebateSession() {
             <h2>Choose your stance</h2>
             <h3 style={{margin: 'var(--space-4) 0', color: 'var(--text-secondary)', fontWeight: '400'}}>Topic: <strong>{room.topic}</strong></h3>
             <div style={{display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', marginTop: 'var(--space-6)'}}>
-              <button className="btn btn-success btn-lg" onClick={() => socket.emit('set_stance', { roomId: room.id, stance: 'for' })}>👍 I'm For It</button>
-              <button className="btn btn-accent btn-lg" onClick={() => socket.emit('set_stance', { roomId: room.id, stance: 'against' })}>👎 I'm Against It</button>
+              <button className="btn btn-success btn-lg" onClick={() => socket.emit('set_stance', { roomId: room.id, stance: 'for' })}><FaThumbsUp style={{marginRight:'6px'}}/> I'm For It</button>
+              <button className="btn btn-accent btn-lg" onClick={() => socket.emit('set_stance', { roomId: room.id, stance: 'against' })}><FaThumbsDown style={{marginRight:'6px'}}/> I'm Against It</button>
             </div>
           </div>
         </div>
@@ -334,15 +335,15 @@ export default function TeamDebateSession() {
             </div>
             <div className="voice-toggles">
               {!isVoiceOn ? (
-                <button className="btn-circle btn-success" onClick={joinVoice}>🎧</button>
+                <button className="btn-circle btn-success" onClick={joinVoice}><FaHeadphones /></button>
               ) : (
                 <>
-                  <button className={`btn-circle ${isMuted ? 'btn-danger' : 'btn-primary'}`} onClick={toggleMute}>{isMuted ? '🔇' : '🎙️'}</button>
-                  <button className="btn-circle btn-secondary" onClick={leaveVoice}>📴</button>
+                  <button className={`btn-circle ${isMuted ? 'btn-danger' : 'btn-primary'}`} onClick={toggleMute}>{isMuted ? <FaVolumeXmark /> : <FaMicrophone />}</button>
+                  <button className="btn-circle btn-secondary" onClick={leaveVoice}><FaPhoneSlash /></button>
                 </>
               )}
-              <button className="btn-circle btn-primary" onClick={copyInvite}>📋</button>
-              <button className="btn-circle btn-ghost" onClick={() => navigate('/debate')}>🚪</button>
+              <button className="btn-circle btn-primary" onClick={copyInvite}><FaClipboard /></button>
+              <button className="btn-circle btn-ghost" onClick={() => navigate('/debate')}><FaDoorOpen /></button>
             </div>
           </div>
         </div>
@@ -350,7 +351,7 @@ export default function TeamDebateSession() {
         <div className="room-sidebar">
           <div className="sidebar-header">
             <h3>Debate Room</h3>
-            <span className="participant-count">👥 {room.participants.length}</span>
+            <span className="participant-count"><FaUsers style={{marginRight:'4px'}}/> {room.participants.length}</span>
           </div>
           <div className="sidebar-content">
             <div className="chat-messages-compact">
@@ -368,7 +369,7 @@ export default function TeamDebateSession() {
             </div>
             <form className="sidebar-input" onSubmit={sendMessage}>
               <input type="text" placeholder="Type argument..." value={input} onChange={(e) => setInput(e.target.value)} />
-              <button type="submit" disabled={!input.trim()}>✦</button>
+              <button type="submit" disabled={!input.trim()}><FaPaperPlane /></button>
             </form>
           </div>
         </div>
