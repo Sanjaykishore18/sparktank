@@ -219,6 +219,10 @@ export default function Dashboard() {
               <span>🏅</span>
               <span>Leaderboard</span>
             </Link>
+            <Link to="/avatar-creator" className="quick-action glass-card avatar-action">
+              <span>👤</span>
+              <span>Edit Avatar</span>
+            </Link>
           </div>
         </div>
       </div>

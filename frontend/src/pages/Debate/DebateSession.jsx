@@ -1,12 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
+import { useAuth } from '../../context/AuthContext';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import threeService from '../../services/threeService';
 import api from '../../services/api';
 import './Debate.css';
 
 export default function DebateSession() {
   const { sessionId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [session, setSession] = useState(null);
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState('');
@@ -18,6 +23,12 @@ export default function DebateSession() {
   const [timer, setTimer] = useState(0);
   const messagesEndRef = useRef(null);
   const timerRef = useRef(null);
+  
+  // 3D Refs
+  const canvasRef = useRef(null);
+  const roomRef = useRef(null);
+  const animationRef = useRef(null);
+  const lastMsgCountRef = useRef(0);
   
   const { isListening, transcript, interimTranscript, isSupported, startListening, stopListening, resetTranscript } = useSpeechRecognition();
 
@@ -35,8 +46,69 @@ export default function DebateSession() {
 
     // Start timer
     timerRef.current = setInterval(() => setTimer(t => t + 1), 1000);
-    return () => clearInterval(timerRef.current);
+    return () => {
+      clearInterval(timerRef.current);
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    };
   }, [sessionId]);
+
+  // Initialize 3D Room
+  useEffect(() => {
+    if (!canvasRef.current || !session || feedback) return;
+
+    let userConfig = { skin: 0, hair: 0, outfit: 0 };
+    try {
+      if (user?.avatar) {
+        userConfig = JSON.parse(user.avatar);
+      }
+    } catch (e) {
+      console.warn('Failed to parse avatar config, using defaults');
+    }
+
+    const { scene, camera, renderer, avatars } = threeService.initRoomScene(canvasRef.current, userConfig);
+    
+    // Orbit Controls
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.minDistance = 2;
+    controls.maxDistance = 15;
+    controls.maxPolarAngle = Math.PI / 2;
+
+    roomRef.current = { scene, camera, renderer, avatars, controls };
+
+    const handleResize = () => {
+      if (!canvasRef.current || !renderer) return;
+      const width = canvasRef.current.clientWidth;
+      const height = canvasRef.current.clientHeight;
+      if (width === 0 || height === 0) return;
+      
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    };
+    window.addEventListener('resize', handleResize);
+
+    const animate = () => {
+      // Subtle breathing for avatars
+      const time = Date.now() * 0.002;
+      avatars.forEach((avatar, i) => {
+        avatar.position.y = 0.05 + Math.sin(time + i) * 0.008;
+      });
+
+      controls.update();
+      renderer.render(scene, camera);
+      animationRef.current = requestAnimationFrame(animate);
+    };
+    animate();
+
+    return () => {
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      window.removeEventListener('resize', handleResize);
+      controls.dispose();
+      renderer.dispose();
+    };
+  }, [session, feedback]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -232,7 +304,7 @@ export default function DebateSession() {
   }
 
   return (
-    <div className="debate-session page" id="debate-session">
+    <div className="debate-room-container page">
       <div className="container">
         {/* Session Header */}
         <div className="session-header glass-card">
@@ -256,71 +328,80 @@ export default function DebateSession() {
           </button>
         </div>
 
-        {/* Chat Area */}
-        <div className="chat-area">
-          <div className="chat-messages">
-            {messages.length === 0 && (
-              <div className="chat-empty">
-                <span>⚔️</span>
-                <p>Start the debate! Share your opening argument using text or voice.</p>
+        <div className="room-layout">
+          {/* 3D World */}
+          <div id="room-canvas-wrap">
+            <canvas ref={canvasRef} id="room-canvas"></canvas>
+            <div className="room-overlay">
+              <div className="room-badge">
+                <div className="room-dot"></div>
+                Live AI Debate Arena
               </div>
-            )}
-            {messages.map((msg, i) => (
-              <div key={i} className={`chat-bubble ${msg.role === 'user' ? 'chat-bubble-user' : 'chat-bubble-ai'}`}>
-                <div className="bubble-header">
-                  <span className="bubble-sender">{msg.role === 'user' ? '👤 You' : '🤖 AI Opponent'}</span>
-                  <span className="bubble-time">{new Date(msg.timestamp).toLocaleTimeString()}</span>
-                </div>
-                <p>{msg.content}</p>
-              </div>
-            ))}
-            {sending && (
-              <div className="chat-bubble chat-bubble-ai">
-                <div className="typing-indicator">
-                  <span /><span /><span />
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
+            </div>
           </div>
 
-          {/* Input Area */}
-          <div className="chat-input-area glass-card">
-            {isListening && (
-              <div className="voice-indicator">
-                <div className="recording-dot" />
-                <span>Listening... speak now</span>
-                {interimTranscript && <span className="interim-text">{interimTranscript}</span>}
+          {/* Sidebar Chat */}
+          <div className="room-sidebar">
+            <div className="sidebar-header">
+              <span className="font-semibold text-sm">Debate Logs</span>
+              <span className="text-xs text-muted">AI Moderated</span>
+            </div>
+            <div className="sidebar-content">
+              <div className="chat-messages-compact scroll-hint">
+                {messages.length === 0 && (
+                  <div className="chat-empty py-8 text-center text-xs opacity-50">
+                    <p>Start the debate! Share your opening argument.</p>
+                  </div>
+                )}
+                {messages.map((msg, i) => (
+                  <div key={i} className={`compact-bubble ${msg.role === 'user' ? 'compact-bubble-user' : 'compact-bubble-ai'}`}>
+                    <p className={msg.role === 'user' ? 'text-white' : ''}>{msg.content}</p>
+                  </div>
+                ))}
+                {sending && (
+                  <div className="compact-bubble compact-bubble-ai">
+                    <div className="typing-indicator scale-75 origin-left">
+                      <span /><span /><span />
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
               </div>
-            )}
-            <div className="chat-input-row">
-              {isSupported && (
-                <button
-                  className={`btn btn-icon ${isListening ? 'btn-accent' : 'btn-ghost'}`}
-                  onClick={toggleMic}
-                  id="mic-btn"
-                  title={isListening ? 'Stop recording' : 'Start voice input'}
-                >
-                  {isListening ? '⏹' : '🎤'}
-                </button>
-              )}
-              <textarea
-                className="input-field chat-input"
-                placeholder="Type your argument or use the microphone..."
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                onKeyDown={handleKeyDown}
-                rows={1}
-                id="debate-input"
-              />
-              <button
-                className="btn btn-primary btn-icon"
-                onClick={sendMessage}
-                disabled={!inputText.trim() || sending}
-                id="send-btn"
-              >
-                ➤
-              </button>
+
+              {/* Input Area (Integrated into Sidebar) */}
+              <div className="chat-input-area border-t border-glass">
+                {isListening && (
+                  <div className="voice-indicator text-[10px] py-1 mb-2">
+                    <div className="recording-dot w-2 h-2" />
+                    <span>Listening...</span>
+                  </div>
+                )}
+                <div className="chat-input-row">
+                  {isSupported && (
+                    <button
+                      className={`btn btn-icon btn-sm ${isListening ? 'btn-accent' : 'btn-ghost'}`}
+                      onClick={toggleMic}
+                    >
+                      {isListening ? '⏹' : '🎤'}
+                    </button>
+                  )}
+                  <textarea
+                    className="input-field chat-input text-sm p-2"
+                    placeholder="Argue..."
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    rows={1}
+                  />
+                  <button
+                    className="btn btn-primary btn-icon btn-sm"
+                    onClick={sendMessage}
+                    disabled={!inputText.trim() || sending}
+                  >
+                    ➤
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

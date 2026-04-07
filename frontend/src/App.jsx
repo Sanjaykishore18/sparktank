@@ -13,6 +13,7 @@ import SocialPage from './pages/Social/SocialPage';
 import SocialSession from './pages/Social/SocialSession';
 import Leaderboard from './pages/Leaderboard/Leaderboard';
 import Pricing from './pages/Pricing/Pricing';
+import AvatarCreator from './pages/Avatar/AvatarCreator';
 
 function ProtectedRoute({ children, premium }) {
   const { user, loading } = useAuth();
@@ -67,6 +68,9 @@ export default function App() {
         } />
         <Route path="/leaderboard" element={
           <ProtectedRoute><Leaderboard /></ProtectedRoute>
+        } />
+        <Route path="/avatar-creator" element={
+          <ProtectedRoute><AvatarCreator /></ProtectedRoute>
         } />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

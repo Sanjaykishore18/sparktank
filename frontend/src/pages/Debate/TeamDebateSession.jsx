@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { useAuth } from '../../context/AuthContext';
 import { useVoiceChat } from '../../hooks/useVoiceChat';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
+import threeService from '../../services/threeService';
 import './Debate.css';
 
 // Derive socket URL from API URL (strip /api suffix if present)
@@ -25,6 +28,10 @@ export default function TeamDebateSession() {
   const [error, setError] = useState('');
   const messagesEndRef = useRef(null);
   const roomIdRef = useRef(null);
+
+  const canvasRef = useRef(null);
+  const roomRef = useRef(null);
+  const animationRef = useRef(null);
 
   // Voice chat
   const { 
@@ -91,7 +98,6 @@ export default function TeamDebateSession() {
       if (roomId === 'new' && state?.topic) {
         newSocket.emit('create_room', { topic: state.topic, userStance: state.stance, maxSize: state.maxSize || 4 });
       } else if (roomId && roomId !== 'new') {
-        // If state has stance, pass it; otherwise joining via link will pass null
         newSocket.emit('join_room', { roomId, stance: state?.stance || null });
       } else {
         setError('Invalid room setup. Please start from the Debate Arena.');
@@ -99,13 +105,11 @@ export default function TeamDebateSession() {
     });
 
     newSocket.on('room_created', (data) => {
-      console.log('🏠 Room created:', data.roomId);
       setRoom(data.room);
       window.history.replaceState(null, '', `/debate/room/${data.roomId}`);
     });
 
     newSocket.on('room_joined', (data) => {
-      console.log('🤝 Joined room:', data.roomId);
       setRoom(data.room);
       if (data.room.messages && data.room.messages.length > 0) {
         setMessages(data.room.messages);
@@ -119,7 +123,7 @@ export default function TeamDebateSession() {
       });
       setMessages(prev => [...prev, { 
         isSystem: true, 
-        content: `${data.user.name} joined the room (stance: ${data.user.stance || 'undecided'}).` 
+        content: `${data.user.name} joined the room.` 
       }]);
     });
 
@@ -145,11 +149,6 @@ export default function TeamDebateSession() {
       setMessages(prev => [...prev, msg]);
     });
 
-    newSocket.on('connect_error', (err) => {
-      console.error('Socket connection error:', err.message);
-      setError(`Connection failed: ${err.message}`);
-    });
-
     newSocket.on('error', (err) => {
       setError(err.message);
     });
@@ -162,10 +161,103 @@ export default function TeamDebateSession() {
     };
   }, [roomId, state]);
 
+  // 3D Initialization logic
+  useEffect(() => {
+    if (!canvasRef.current || !room) return;
+
+    // Clean up
+    if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    if (roomRef.current?.renderer) roomRef.current.renderer.dispose();
+
+    let userConfig = { skin: 0, hair: 0, hairColor: 0, outfit: 0, outfitColor: 0 };
+    try {
+      if (user?.avatar) userConfig = typeof user.avatar === 'string' ? JSON.parse(user.avatar) : user.avatar;
+    } catch(e) {}
+
+    const { scene, camera, renderer } = threeService.initRoomScene(canvasRef.current, userConfig);
+    
+    // Orbit Controls
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.minDistance = 2;
+    controls.maxDistance = 15;
+    controls.maxPolarAngle = Math.PI / 2; // Don't go below floor
+
+    // Clear all Groups from the scene (removes service-placed avatars/chairs)
+    // Must iterate backwards when removing children to avoid skipping elements
+    for (let i = scene.children.length - 1; i >= 0; i--) {
+      const child = scene.children[i];
+      if (child.type === 'Group') {
+        scene.remove(child);
+      }
+    }
+
+    const CHAIR_Y  = threeService.CHAIR_Y;
+    const SEATED_Y = threeService.SEATED_Y;
+    const participantMeshes = [];
+
+    room.participants.forEach((p, i) => {
+      let pConfig = { skin: i % 5, hair: i % 4, hairColor: 0, outfit: i % 2, outfitColor: 0 };
+      try {
+        if (p.avatar) pConfig = typeof p.avatar === 'string' ? JSON.parse(p.avatar) : p.avatar;
+      } catch(e) {}
+
+      const angle  = (i / Math.max(room.participants.length, 1)) * Math.PI * 2;
+      const radius = 3.8;
+      const px = Math.cos(angle) * radius;
+      const pz = Math.sin(angle) * radius;
+
+      // Chair
+      const chair = threeService.buildChair();
+      chair.position.set(px, CHAIR_Y, pz);
+      chair.lookAt(0, CHAIR_Y, 0); 
+      chair.rotateY(Math.PI);      // LookAt points +Z to center. Chair back is at +Z. So we flip it to face outward.
+      scene.add(chair);
+
+      // Seated avatar
+      const mesh = threeService.buildSeatedAvatarMesh(pConfig);
+      mesh.position.set(px, SEATED_Y, pz);
+      mesh.lookAt(0, SEATED_Y, 0); // Faces toward center naturally
+      scene.add(mesh);
+      participantMeshes.push(mesh);
+    });
+
+    roomRef.current = { scene, camera, renderer, participantMeshes, controls };
+
+    const handleResize = () => {
+      if (!canvasRef.current || !renderer) return;
+      const width = canvasRef.current.clientWidth;
+      const height = canvasRef.current.clientHeight;
+      if (width === 0 || height === 0) return;
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height);
+    };
+    window.addEventListener('resize', handleResize);
+
+    const animate = () => {
+      const time = Date.now() * 0.002;
+      participantMeshes.forEach((mesh, i) => {
+        mesh.position.y = 0.05 + Math.sin(time + i) * 0.008;
+      });
+      controls.update();
+      renderer.render(scene, camera);
+      animationRef.current = requestAnimationFrame(animate);
+    };
+    animate();
+
+    return () => {
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      window.removeEventListener('resize', handleResize);
+      controls.dispose();
+      renderer.dispose();
+    };
+  }, [room]);
+
   const sendMessage = (e) => {
     e?.preventDefault();
     if (!input.trim() || !socket || !room) return;
-
     socket.emit('room_message', { roomId: room.id, message: input });
     setInput('');
   };
@@ -175,9 +267,6 @@ export default function TeamDebateSession() {
     alert('Invite link copied!');
   };
 
-  // Helper to check if a participant is in voice
-  const isInVoice = (participantId) => voiceUsers.includes(participantId);
-
   // ─── Error State ───
   if (error) {
     return (
@@ -186,9 +275,7 @@ export default function TeamDebateSession() {
           <div className="glass-card" style={{padding: 'var(--space-6)', textAlign: 'center'}}>
             <h2 style={{color: 'var(--error-color)'}}>Error</h2>
             <p>{error}</p>
-            <button className="btn btn-primary" style={{marginTop: 'var(--space-4)'}} onClick={() => navigate('/debate')}>
-              Back to Arena
-            </button>
+            <button className="btn btn-primary" onClick={() => navigate('/debate')}>Back to Arena</button>
           </div>
         </div>
       </div>
@@ -202,7 +289,7 @@ export default function TeamDebateSession() {
         <div className="container">
           <div className="loading-overlay" style={{position: 'relative', height: 400}}>
             <div className="spinner" />
-            <p style={{marginTop: 20}}>Connecting to Team Room...</p>
+            <p>Connecting to Team Room...</p>
           </div>
         </div>
       </div>
@@ -211,9 +298,7 @@ export default function TeamDebateSession() {
 
   // ─── Stance Selection ───
   const amIParticipant = room?.participants?.find(p => p.id === user?.id);
-  const myStance = amIParticipant?.stance;
-
-  if (room && !myStance && amIParticipant) {
+  if (room && !amIParticipant?.stance && amIParticipant) {
     return (
       <div className="debate-session page">
         <div className="container">
@@ -230,163 +315,62 @@ export default function TeamDebateSession() {
     );
   }
 
-  // ─── Room UI ───
+  // ─── Room UI (3D Cinematic) ───
   return (
-    <div className="debate-session page">
-      <div className="container">
-        
-        {/* Room Header */}
-        <div className="session-header glass-card animate-slide-up">
-          <button className="btn btn-ghost btn-sm" onClick={() => navigate('/debate')}>
-            ← Leave Room
-          </button>
-          <div className="topic-display">
-            <h2>{room.topic}</h2>
-            <div className="room-meta" style={{display: 'flex', gap: 'var(--space-4)', marginTop: 'var(--space-3)', flexWrap: 'wrap'}}>
-              <span className="badge badge-accent">Room: {room.id}</span>
-              <span className="badge badge-primary">Participants: {room.participants.length}/{room.maxSize || 4}</span>
-              <button className="btn btn-outline btn-sm" onClick={copyInvite}>📋 Copy Invite Link</button>
+    <div className="debate-room-container page">
+      <div className="room-layout">
+        <div id="room-canvas-wrap">
+          <canvas ref={canvasRef} id="room-canvas" />
+          <div className="room-overlay">
+            <div className="room-badge">
+              <div className="room-dot" />
+              {room.topic}
             </div>
           </div>
-        </div>
-
-        {/* Voice Chat Panel */}
-        <div className="voice-panel glass-card animate-slide-up" style={{animationDelay: '0.05s'}}>
-          <div className="voice-panel-header">
-            <div className="voice-panel-title">
-              <span className="voice-icon">🎙️</span>
-              <h3>Voice Chat</h3>
-              {isVoiceOn && (
-                <span className="voice-live-badge">
-                  <span className="voice-live-dot" />
-                  LIVE
-                </span>
-              )}
+          <div className="room-controls-overlay">
+            <div className="room-meta-pills">
+              <span className="badge-pill">Room ID: {room.id}</span>
+              <span className="badge-pill">Participants: {room.participants.length}/{room.maxSize || 4}</span>
             </div>
-            <div className="voice-controls">
+            <div className="voice-toggles">
               {!isVoiceOn ? (
-                <button className="btn btn-success btn-sm" onClick={joinVoice}>
-                  🎧 Connect Audio
-                </button>
+                <button className="btn-circle btn-success" onClick={joinVoice}>🎧</button>
               ) : (
                 <>
-                  <button 
-                    className={`btn btn-sm ${isMuted ? 'btn-accent' : 'btn-success'}`} 
-                    onClick={toggleMute}
-                    title={isMuted ? 'Turn on Mic' : 'Turn off Mic'}
-                  >
-                    {isMuted ? '🎤 Mic Off' : '🎙️ Mic On'}
-                  </button>
-
-                  <button 
-                    className={`btn btn-sm ${isDeafened ? 'btn-accent' : 'btn-secondary'}`} 
-                    onClick={toggleDeafen}
-                    title={isDeafened ? 'Unmute Speakers' : 'Mute Speakers'}
-                  >
-                    {isDeafened ? '🔇 Spk Off' : '🔊 Spk On'}
-                  </button>
-
-                  <button className="btn btn-sm btn-outline" onClick={leaveVoice} style={{borderColor: 'var(--error-400)', color: 'var(--error-400)'}}>
-                    📴 Disconnect
-                  </button>
+                  <button className={`btn-circle ${isMuted ? 'btn-danger' : 'btn-primary'}`} onClick={toggleMute}>{isMuted ? '🔇' : '🎙️'}</button>
+                  <button className="btn-circle btn-secondary" onClick={leaveVoice}>📴</button>
                 </>
               )}
+              <button className="btn-circle btn-primary" onClick={copyInvite}>📋</button>
+              <button className="btn-circle btn-ghost" onClick={() => navigate('/debate')}>🚪</button>
             </div>
-          </div>
-
-          {voiceError && (
-            <div className="voice-error">
-              ⚠️ {voiceError}
-            </div>
-          )}
-
-          {/* Participants with voice status */}
-          <div className="voice-participants">
-            {room.participants.map((p) => (
-              <div key={p.id} className={`voice-participant ${isInVoice(p.id) ? 'voice-active' : ''} ${!p.online ? 'voice-offline' : ''}`}>
-                <div className="voice-avatar" style={{opacity: p.online ? 1 : 0.5}}>
-                  {p.name.charAt(0).toUpperCase()}
-                  {isInVoice(p.id) && (
-                    <span className="voice-indicator-dot" />
-                  )}
-                </div>
-                <div className="voice-participant-info" style={{opacity: p.online ? 1 : 0.5}}>
-                  <span className="voice-participant-name">
-                    {p.id === user?.id ? `${p.name} (You)` : p.name}
-                    {!p.online && ' (Offline)'}
-                  </span>
-                  <span className={`voice-participant-stance ${p.stance === 'for' ? 'stance-for' : (p.stance === 'against' ? 'stance-against' : 'stance-none')}`}>
-                    {p.stance === 'for' ? '👍 For' : (p.stance === 'against' ? '👎 Against' : '🤔 Deciding')}
-                  </span>
-                </div>
-                {isInVoice(p.id) && (
-                  <div className="voice-wave">
-                    <span /><span /><span /><span />
-                  </div>
-                )}
-              </div>
-            ))}
           </div>
         </div>
 
-        {/* Chat Area */}
-        <div className="chat-container glass-card animate-slide-up" style={{animationDelay: '0.1s'}}>
-          <div className="messages-area">
-            {messages.length === 0 ? (
-              <div className="empty-state">
-                <span className="empty-icon">🤝</span>
-                <h3>Waiting for friends</h3>
-                <p>Share the invite link to start the debate!</p>
-              </div>
-            ) : (
-              messages.map((msg, index) => {
-                if (msg.isSystem) {
-                  return (
-                    <div key={index} className="system-message">
-                      <p>{msg.content}</p>
-                    </div>
-                  );
-                }
-
-                const isMe = msg.userId === user?.id;
-                
-                return (
-                  <div key={index} className={`message ${isMe ? 'message-user' : 'message-other'}`}>
-                    <div className="message-bubble">
-                      <div className="message-header">
-                        {isMe ? 'You' : msg.userName}
-                      </div>
-                      <p>{msg.content}</p>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-            <div ref={messagesEndRef} />
+        <div className="room-sidebar">
+          <div className="sidebar-header">
+            <h3>Debate Room</h3>
+            <span className="participant-count">👥 {room.participants.length}</span>
           </div>
-
-          {interimTranscript && isVoiceOn && !isMuted ? (
-            <div className="interim-text" style={{ padding: '0 16px 8px', fontStyle: 'italic', color: 'var(--text-tertiary)' }}>
-              {interimTranscript}...
+          <div className="sidebar-content">
+            <div className="chat-messages-compact">
+              {messages.length === 0 ? (
+                <div className="empty-sidebar"><p>Waiting for arguments...</p></div>
+              ) : (
+                messages.map((msg, i) => (
+                  <div key={i} className={`compact-bubble ${msg.userId === user?.id ? 'compact-bubble-user' : (msg.isSystem ? 'compact-bubble-system' : 'compact-bubble-ai')}`}>
+                    {!msg.isSystem && <div className="bubble-user-name">{msg.userId === user?.id ? 'You' : msg.userName}</div>}
+                    <div className="bubble-text">{msg.content}</div>
+                  </div>
+                ))
+              )}
+              <div ref={messagesEndRef} />
             </div>
-          ) : null}
-
-          <form className="input-area" onSubmit={sendMessage}>
-            <input
-              type="text"
-              className="chat-input"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Type your argument..."
-            />
-            <button 
-              type="submit" 
-              className="btn btn-primary"
-              disabled={!input.trim()}
-            >
-              Send
-            </button>
-          </form>
+            <form className="sidebar-input" onSubmit={sendMessage}>
+              <input type="text" placeholder="Type argument..." value={input} onChange={(e) => setInput(e.target.value)} />
+              <button type="submit" disabled={!input.trim()}>✦</button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
