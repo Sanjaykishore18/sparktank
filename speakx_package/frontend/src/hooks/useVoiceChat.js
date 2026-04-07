@@ -74,6 +74,7 @@ export function useVoiceChat(socket, roomId, userId) {
         audio = new Audio();
         audio.autoplay = true;
         audio.playsInline = true;
+        audio.muted = isDeafened; // respect output receiver state
         document.body.appendChild(audio);
         audioElementsRef.current.set(peerId, audio);
       }
@@ -263,7 +264,9 @@ export function useVoiceChat(socket, roomId, userId) {
     socket.emit('voice_leave', { roomId });
   }, [socket, roomId, closePeer]);
 
-  // ─── Toggle mute ───
+  const [isDeafened, setIsDeafened] = useState(false);
+
+  // ─── Toggle mute (Input Voice) ───
   const toggleMute = useCallback(() => {
     if (!localStreamRef.current) return;
 
@@ -273,6 +276,15 @@ export function useVoiceChat(socket, roomId, userId) {
       setIsMuted(!audioTrack.enabled);
     }
   }, []);
+
+  // ─── Toggle deafen (Output Receiver) ───
+  const toggleDeafen = useCallback(() => {
+    const newDeafened = !isDeafened;
+    setIsDeafened(newDeafened);
+    for (const audio of audioElementsRef.current.values()) {
+      audio.muted = newDeafened;
+    }
+  }, [isDeafened]);
 
   // ─── Cleanup on unmount ───
   useEffect(() => {
@@ -292,10 +304,12 @@ export function useVoiceChat(socket, roomId, userId) {
   return {
     isVoiceOn,
     isMuted,
+    isDeafened,
     voiceUsers,
     voiceError,
     joinVoice,
     leaveVoice,
-    toggleMute
+    toggleMute,
+    toggleDeafen
   };
 }

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 
 export function useSpeechRecognition() {
   const [isListening, setIsListening] = useState(false);
+  const isListeningRef = useRef(false); // Track latest state for event handlers
   const [transcript, setTranscript] = useState('');
   const [interimTranscript, setInterimTranscript] = useState('');
   const [isSupported, setIsSupported] = useState(false);
@@ -39,11 +40,13 @@ export function useSpeechRecognition() {
         console.error('Speech recognition error:', event.error);
         if (event.error !== 'no-speech') {
           setIsListening(false);
+          isListeningRef.current = false;
         }
       };
 
       recognition.onend = () => {
-        if (isListening) {
+        // Use the ref because this closure is stale
+        if (isListeningRef.current) {
           try { recognition.start(); } catch(e) {}
         }
       };
@@ -59,25 +62,27 @@ export function useSpeechRecognition() {
   }, []);
 
   const startListening = useCallback(() => {
-    if (recognitionRef.current && !isListening) {
+    if (recognitionRef.current && !isListeningRef.current) {
       setTranscript('');
       setInterimTranscript('');
       try {
         recognitionRef.current.start();
         setIsListening(true);
+        isListeningRef.current = true;
       } catch(e) {
         console.error('Failed to start recognition:', e);
       }
     }
-  }, [isListening]);
+  }, []);
 
   const stopListening = useCallback(() => {
-    if (recognitionRef.current && isListening) {
-      recognitionRef.current.stop();
+    if (recognitionRef.current && isListeningRef.current) {
+      isListeningRef.current = false;
       setIsListening(false);
+      recognitionRef.current.stop();
       setInterimTranscript('');
     }
-  }, [isListening]);
+  }, []);
 
   const resetTranscript = useCallback(() => {
     setTranscript('');

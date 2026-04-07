@@ -28,8 +28,8 @@ export default function TeamDebateSession() {
 
   // Voice chat
   const { 
-    isVoiceOn, isMuted, voiceUsers, voiceError,
-    joinVoice, leaveVoice, toggleMute 
+    isVoiceOn, isMuted, isDeafened, voiceUsers, voiceError,
+    joinVoice, leaveVoice, toggleMute, toggleDeafen 
   } = useVoiceChat(socket, room?.id, user?.id);
 
   // Convert voice to text
@@ -237,19 +237,28 @@ export default function TeamDebateSession() {
             <div className="voice-controls">
               {!isVoiceOn ? (
                 <button className="btn btn-success btn-sm" onClick={joinVoice}>
-                  🎤 Join Voice
+                  🎧 Connect Audio
                 </button>
               ) : (
                 <>
                   <button 
-                    className={`btn btn-sm ${isMuted ? 'btn-accent' : 'btn-ghost'}`} 
+                    className={`btn btn-sm ${isMuted ? 'btn-accent' : 'btn-success'}`} 
                     onClick={toggleMute}
-                    title={isMuted ? 'Unmute' : 'Mute'}
+                    title={isMuted ? 'Turn on Mic' : 'Turn off Mic'}
                   >
-                    {isMuted ? '🔇 Muted' : '🔊 Unmute'}
+                    {isMuted ? '🎤 Mic Off' : '🎙️ Mic On'}
                   </button>
+
+                  <button 
+                    className={`btn btn-sm ${isDeafened ? 'btn-accent' : 'btn-secondary'}`} 
+                    onClick={toggleDeafen}
+                    title={isDeafened ? 'Unmute Speakers' : 'Mute Speakers'}
+                  >
+                    {isDeafened ? '🔇 Spk Off' : '🔊 Spk On'}
+                  </button>
+
                   <button className="btn btn-sm btn-outline" onClick={leaveVoice} style={{borderColor: 'var(--error-400)', color: 'var(--error-400)'}}>
-                    📴 Leave Voice
+                    📴 Disconnect
                   </button>
                 </>
               )}
@@ -312,9 +321,9 @@ export default function TeamDebateSession() {
                 const isMe = msg.userId === user?.id;
                 
                 return (
-                  <div key={index} className={`message ${isMe ? 'message-user' : 'message-ai'}`}>
+                  <div key={index} className={`message ${isMe ? 'message-user' : 'message-other'}`}>
                     <div className="message-bubble">
-                      <div className="message-header" style={{fontSize: '0.8rem', opacity: 0.7, marginBottom: 4}}>
+                      <div className="message-header">
                         {isMe ? 'You' : msg.userName}
                       </div>
                       <p>{msg.content}</p>
