@@ -55,6 +55,9 @@ app.use('/api/intro', introRoutes);
 app.use('/api/social', socialRoutes);
 app.use('/api/gamification', gamificationRoutes);
 
+// Suppress browser favicon requests
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
