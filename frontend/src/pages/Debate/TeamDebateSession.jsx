@@ -4,6 +4,12 @@ import { io } from 'socket.io-client';
 import { useAuth } from '../../context/AuthContext';
 import './Debate.css';
 
+// Derive socket URL from API URL (strip /api suffix if present)
+const SOCKET_URL = (() => {
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  return apiUrl.replace(/\/api\/?$/, '');
+})();
+
 export default function TeamDebateSession() {
   const { roomId } = useParams();
   const { state } = useLocation();
@@ -16,39 +22,71 @@ export default function TeamDebateSession() {
   const [input, setInput] = useState('');
   const [error, setError] = useState('');
   const messagesEndRef = useRef(null);
-  const inviteLink = `${window.location.origin}/debate?room=${roomId === 'new' ? room?.id : roomId}`;
+  const roomIdRef = useRef(null);
 
+  // Compute invite link from current room
+  const currentRoomId = room?.id || (roomId !== 'new' ? roomId : null);
+  const inviteLink = currentRoomId ? `${window.location.origin}/debate?room=${currentRoomId}` : '';
+
+  // Auto-scroll to latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Keep roomIdRef in sync for cleanup
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+    roomIdRef.current = room?.id || null;
+  }, [room]);
 
-    // Connect to socket in the backend URL
-    const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', {
-      auth: { token }
+  // Main socket effect
+  useEffect(() => {
+    const token = localStorage.getItem('speakx_token');
+    if (!token) {
+      setError('You must be logged in to join a team room.');
+      return;
+    }
+
+    const newSocket = io(SOCKET_URL, {
+      auth: { token },
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
     });
 
     setSocket(newSocket);
 
+    // ─── Connection established ───
     newSocket.on('connect', () => {
+      console.log('✅ Socket connected:', newSocket.id);
+
       if (roomId === 'new' && state?.topic) {
+        // Creating a new room
         newSocket.emit('create_room', { topic: state.topic, userStance: state.stance });
-      } else if (roomId !== 'new') {
+      } else if (roomId && roomId !== 'new') {
+        // Joining an existing room
         newSocket.emit('join_room', { roomId });
       } else {
         setError('Invalid room setup. Please start from the Debate Arena.');
       }
     });
 
+    // ─── Room created (host only) ───
     newSocket.on('room_created', (data) => {
+      console.log('🏠 Room created:', data.roomId);
       setRoom(data.room);
-      // Replace the strict 'new' route with the actual room id in the URL bar
       window.history.replaceState(null, '', `/debate/room/${data.roomId}`);
     });
 
+    // ─── Room joined (joiner only) ───
+    newSocket.on('room_joined', (data) => {
+      console.log('🤝 Joined room:', data.roomId);
+      setRoom(data.room);
+      // Load any existing messages from the room
+      if (data.room.messages && data.room.messages.length > 0) {
+        setMessages(data.room.messages);
+      }
+    });
+
+    // ─── Someone joined the room (everyone) ───
     newSocket.on('user_joined', (data) => {
       setRoom(prev => {
         if (!prev) return prev;
@@ -56,10 +94,11 @@ export default function TeamDebateSession() {
       });
       setMessages(prev => [...prev, { 
         isSystem: true, 
-        content: `${data.user.name} joined the room standing ${data.user.stance} the topic.` 
+        content: `${data.user.name} joined the room (${data.user.stance} the topic).` 
       }]);
     });
 
+    // ─── Someone left the room ───
     newSocket.on('user_left', (data) => {
       setRoom(prev => {
         if (!prev) return prev;
@@ -71,17 +110,26 @@ export default function TeamDebateSession() {
       }]);
     });
 
+    // ─── New chat message ───
     newSocket.on('new_message', (msg) => {
       setMessages(prev => [...prev, msg]);
     });
 
+    // ─── Connection errors ───
+    newSocket.on('connect_error', (err) => {
+      console.error('Socket connection error:', err.message);
+      setError(`Connection failed: ${err.message}`);
+    });
+
+    // ─── Server-side errors ───
     newSocket.on('error', (err) => {
       setError(err.message);
     });
 
+    // ─── Cleanup on unmount ───
     return () => {
-      if (room?.id) {
-        newSocket.emit('leave_room', { roomId: room.id });
+      if (roomIdRef.current) {
+        newSocket.emit('leave_room', { roomId: roomIdRef.current });
       }
       newSocket.disconnect();
     };
@@ -100,6 +148,7 @@ export default function TeamDebateSession() {
     alert('Invite link copied!');
   };
 
+  // ─── Error State ───
   if (error) {
     return (
       <div className="debate-session page">
@@ -116,6 +165,7 @@ export default function TeamDebateSession() {
     );
   }
 
+  // ─── Loading State ───
   if (!room) {
     return (
       <div className="debate-session page">
@@ -129,6 +179,7 @@ export default function TeamDebateSession() {
     );
   }
 
+  // ─── Room UI ───
   return (
     <div className="debate-session page">
       <div className="container">
