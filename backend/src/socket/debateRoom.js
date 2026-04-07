@@ -39,14 +39,13 @@ function setupSocket(io) {
         host: { id: socket.user._id.toString(), name: socket.user.name, stance: userStance },
         participants: [{ id: socket.user._id.toString(), name: socket.user.name, stance: userStance }],
         messages: [],
+        voiceUsers: [], // track who has voice enabled
         status: 'waiting',
         createdAt: new Date()
       };
 
       rooms.set(roomId, room);
       socket.join(roomId);
-
-      // Track which room this socket is in for disconnect cleanup
       socket.currentRoomId = roomId;
 
       console.log(`🏠 Room created: ${roomId} by ${socket.user.name}`);
@@ -74,14 +73,12 @@ function setupSocket(io) {
       // Check if user is already in the room
       const alreadyIn = room.participants.some(p => p.id === socket.user._id.toString());
       if (alreadyIn) {
-        // Just re-join the socket.io room and send room data
         socket.join(roomId);
         socket.currentRoomId = roomId;
         socket.emit('room_joined', { roomId, room });
         return;
       }
 
-      // Assign opposite stance to the host
       const hostStance = room.host.stance;
       const joinStance = hostStance === 'for' ? 'against' : 'for';
 
@@ -93,16 +90,14 @@ function setupSocket(io) {
 
       room.participants.push(participant);
       socket.join(roomId);
-
-      // Track which room this socket is in for disconnect cleanup
       socket.currentRoomId = roomId;
 
       console.log(`👤 ${socket.user.name} joined room ${roomId} (${joinStance})`);
 
-      // 1. Send room data to the JOINER so they can render the room
+      // Send room data to the JOINER
       socket.emit('room_joined', { roomId, room });
 
-      // 2. Notify ALL participants (including joiner) about the new user
+      // Notify ALL participants about the new user
       io.to(roomId).emit('user_joined', {
         user: { name: socket.user.name, stance: joinStance },
         participants: room.participants
@@ -117,7 +112,6 @@ function setupSocket(io) {
         return;
       }
 
-      // Verify user is in the room
       const isParticipant = room.participants.some(p => p.id === socket.user._id.toString());
       if (!isParticipant) {
         socket.emit('error', { message: 'You are not in this room.' });
@@ -133,6 +127,115 @@ function setupSocket(io) {
 
       room.messages.push(msg);
       io.to(roomId).emit('new_message', msg);
+    });
+
+    // ═══════════════════════════════════════════
+    // ─── WebRTC Voice Signaling ───
+    // ═══════════════════════════════════════════
+
+    // User wants to join voice chat
+    socket.on('voice_join', ({ roomId }) => {
+      const room = rooms.get(roomId);
+      if (!room) return;
+
+      const userId = socket.user._id.toString();
+      if (!room.voiceUsers.includes(userId)) {
+        room.voiceUsers.push(userId);
+      }
+
+      console.log(`🎤 ${socket.user.name} joined voice in ${roomId}`);
+
+      // Tell everyone in the room about voice state change
+      io.to(roomId).emit('voice_users_updated', {
+        voiceUsers: room.voiceUsers
+      });
+
+      // Tell the joiner which users are already in voice (so they can create offers)
+      socket.emit('voice_peers', {
+        peers: room.voiceUsers.filter(id => id !== userId)
+      });
+
+      // Tell existing voice users about the new voice peer (they should send offers)
+      socket.to(roomId).emit('voice_peer_joined', {
+        peerId: userId,
+        peerName: socket.user.name,
+        socketId: socket.id
+      });
+    });
+
+    // User leaves voice chat
+    socket.on('voice_leave', ({ roomId }) => {
+      const room = rooms.get(roomId);
+      if (!room) return;
+
+      const userId = socket.user._id.toString();
+      room.voiceUsers = room.voiceUsers.filter(id => id !== userId);
+
+      console.log(`🔇 ${socket.user.name} left voice in ${roomId}`);
+
+      io.to(roomId).emit('voice_users_updated', {
+        voiceUsers: room.voiceUsers
+      });
+
+      socket.to(roomId).emit('voice_peer_left', {
+        peerId: userId
+      });
+    });
+
+    // WebRTC signaling: relay offer to specific peer
+    socket.on('webrtc_offer', ({ roomId, targetUserId, offer }) => {
+      const fromUserId = socket.user._id.toString();
+      // Find the target socket in the room
+      const roomSockets = io.sockets.adapter.rooms.get(roomId);
+      if (!roomSockets) return;
+
+      for (const sid of roomSockets) {
+        const s = io.sockets.sockets.get(sid);
+        if (s && s.user._id.toString() === targetUserId) {
+          s.emit('webrtc_offer', {
+            fromUserId,
+            fromName: socket.user.name,
+            offer
+          });
+          break;
+        }
+      }
+    });
+
+    // WebRTC signaling: relay answer to specific peer
+    socket.on('webrtc_answer', ({ roomId, targetUserId, answer }) => {
+      const fromUserId = socket.user._id.toString();
+      const roomSockets = io.sockets.adapter.rooms.get(roomId);
+      if (!roomSockets) return;
+
+      for (const sid of roomSockets) {
+        const s = io.sockets.sockets.get(sid);
+        if (s && s.user._id.toString() === targetUserId) {
+          s.emit('webrtc_answer', {
+            fromUserId,
+            answer
+          });
+          break;
+        }
+      }
+    });
+
+    // WebRTC signaling: relay ICE candidate to specific peer
+    socket.on('webrtc_ice_candidate', ({ roomId, targetUserId, candidate }) => {
+      const fromUserId = socket.user._id.toString();
+      const roomSockets = io.sockets.adapter.rooms.get(roomId);
+      if (!roomSockets) return;
+
+      for (const sid of roomSockets) {
+        const s = io.sockets.sockets.get(sid);
+        if (s && s.user._id.toString() === targetUserId) {
+          s.emit('webrtc_ice_candidate', {
+            fromUserId,
+            candidate
+          });
+          break;
+        }
+      }
     });
 
     // ─── Leave room ───
@@ -159,12 +262,10 @@ function setupSocket(io) {
     socket.on('disconnect', (reason) => {
       console.log(`❌ Socket disconnected: ${socket.user.name} (${reason})`);
       
-      // Clean up from tracked room
       if (socket.currentRoomId) {
         handleLeaveRoom(socket, io, socket.currentRoomId);
       }
 
-      // Also scan all rooms as a safety net
       for (const [roomId, room] of rooms.entries()) {
         const wasIn = room.participants.some(p => p.id === socket.user._id.toString());
         if (wasIn) {
@@ -182,6 +283,13 @@ function handleLeaveRoom(socket, io, roomId) {
   const userId = socket.user._id.toString();
   const wasIn = room.participants.some(p => p.id === userId);
   if (!wasIn) return;
+
+  // Remove from voice users
+  if (room.voiceUsers.includes(userId)) {
+    room.voiceUsers = room.voiceUsers.filter(id => id !== userId);
+    io.to(roomId).emit('voice_users_updated', { voiceUsers: room.voiceUsers });
+    socket.to(roomId).emit('voice_peer_left', { peerId: userId });
+  }
 
   room.participants = room.participants.filter(p => p.id !== userId);
   socket.leave(roomId);

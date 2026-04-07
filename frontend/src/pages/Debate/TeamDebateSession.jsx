@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { useAuth } from '../../context/AuthContext';
+import { useVoiceChat } from '../../hooks/useVoiceChat';
+import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 import './Debate.css';
 
 // Derive socket URL from API URL (strip /api suffix if present)
@@ -23,6 +25,35 @@ export default function TeamDebateSession() {
   const [error, setError] = useState('');
   const messagesEndRef = useRef(null);
   const roomIdRef = useRef(null);
+
+  // Voice chat
+  const { 
+    isVoiceOn, isMuted, voiceUsers, voiceError,
+    joinVoice, leaveVoice, toggleMute 
+  } = useVoiceChat(socket, room?.id, user?.id);
+
+  // Convert voice to text
+  const {
+    isListening, transcript, interimTranscript,
+    startListening, stopListening, resetTranscript
+  } = useSpeechRecognition();
+
+  // Sync speech recognition with voice state
+  useEffect(() => {
+    if (isVoiceOn && !isMuted) {
+      startListening();
+    } else {
+      stopListening();
+    }
+  }, [isVoiceOn, isMuted, startListening, stopListening]);
+
+  // Auto-send transcribed text as a chat message
+  useEffect(() => {
+    if (transcript && socket && room && isVoiceOn && !isMuted) {
+      socket.emit('room_message', { roomId: room.id, message: transcript.trim() });
+      resetTranscript();
+    }
+  }, [transcript, socket, room, isVoiceOn, isMuted, resetTranscript]);
 
   // Compute invite link from current room
   const currentRoomId = room?.id || (roomId !== 'new' ? roomId : null);
@@ -54,39 +85,32 @@ export default function TeamDebateSession() {
 
     setSocket(newSocket);
 
-    // ─── Connection established ───
     newSocket.on('connect', () => {
       console.log('✅ Socket connected:', newSocket.id);
 
       if (roomId === 'new' && state?.topic) {
-        // Creating a new room
         newSocket.emit('create_room', { topic: state.topic, userStance: state.stance });
       } else if (roomId && roomId !== 'new') {
-        // Joining an existing room
         newSocket.emit('join_room', { roomId });
       } else {
         setError('Invalid room setup. Please start from the Debate Arena.');
       }
     });
 
-    // ─── Room created (host only) ───
     newSocket.on('room_created', (data) => {
       console.log('🏠 Room created:', data.roomId);
       setRoom(data.room);
       window.history.replaceState(null, '', `/debate/room/${data.roomId}`);
     });
 
-    // ─── Room joined (joiner only) ───
     newSocket.on('room_joined', (data) => {
       console.log('🤝 Joined room:', data.roomId);
       setRoom(data.room);
-      // Load any existing messages from the room
       if (data.room.messages && data.room.messages.length > 0) {
         setMessages(data.room.messages);
       }
     });
 
-    // ─── Someone joined the room (everyone) ───
     newSocket.on('user_joined', (data) => {
       setRoom(prev => {
         if (!prev) return prev;
@@ -98,7 +122,6 @@ export default function TeamDebateSession() {
       }]);
     });
 
-    // ─── Someone left the room ───
     newSocket.on('user_left', (data) => {
       setRoom(prev => {
         if (!prev) return prev;
@@ -110,23 +133,19 @@ export default function TeamDebateSession() {
       }]);
     });
 
-    // ─── New chat message ───
     newSocket.on('new_message', (msg) => {
       setMessages(prev => [...prev, msg]);
     });
 
-    // ─── Connection errors ───
     newSocket.on('connect_error', (err) => {
       console.error('Socket connection error:', err.message);
       setError(`Connection failed: ${err.message}`);
     });
 
-    // ─── Server-side errors ───
     newSocket.on('error', (err) => {
       setError(err.message);
     });
 
-    // ─── Cleanup on unmount ───
     return () => {
       if (roomIdRef.current) {
         newSocket.emit('leave_room', { roomId: roomIdRef.current });
@@ -147,6 +166,9 @@ export default function TeamDebateSession() {
     navigator.clipboard.writeText(inviteLink);
     alert('Invite link copied!');
   };
+
+  // Helper to check if a participant is in voice
+  const isInVoice = (participantId) => voiceUsers.includes(participantId);
 
   // ─── Error State ───
   if (error) {
@@ -184,6 +206,7 @@ export default function TeamDebateSession() {
     <div className="debate-session page">
       <div className="container">
         
+        {/* Room Header */}
         <div className="session-header glass-card animate-slide-up">
           <button className="btn btn-ghost btn-sm" onClick={() => navigate('/debate')}>
             ← Leave Room
@@ -198,6 +221,76 @@ export default function TeamDebateSession() {
           </div>
         </div>
 
+        {/* Voice Chat Panel */}
+        <div className="voice-panel glass-card animate-slide-up" style={{animationDelay: '0.05s'}}>
+          <div className="voice-panel-header">
+            <div className="voice-panel-title">
+              <span className="voice-icon">🎙️</span>
+              <h3>Voice Chat</h3>
+              {isVoiceOn && (
+                <span className="voice-live-badge">
+                  <span className="voice-live-dot" />
+                  LIVE
+                </span>
+              )}
+            </div>
+            <div className="voice-controls">
+              {!isVoiceOn ? (
+                <button className="btn btn-success btn-sm" onClick={joinVoice}>
+                  🎤 Join Voice
+                </button>
+              ) : (
+                <>
+                  <button 
+                    className={`btn btn-sm ${isMuted ? 'btn-accent' : 'btn-ghost'}`} 
+                    onClick={toggleMute}
+                    title={isMuted ? 'Unmute' : 'Mute'}
+                  >
+                    {isMuted ? '🔇 Muted' : '🔊 Unmute'}
+                  </button>
+                  <button className="btn btn-sm btn-outline" onClick={leaveVoice} style={{borderColor: 'var(--error-400)', color: 'var(--error-400)'}}>
+                    📴 Leave Voice
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {voiceError && (
+            <div className="voice-error">
+              ⚠️ {voiceError}
+            </div>
+          )}
+
+          {/* Participants with voice status */}
+          <div className="voice-participants">
+            {room.participants.map((p) => (
+              <div key={p.id} className={`voice-participant ${isInVoice(p.id) ? 'voice-active' : ''}`}>
+                <div className="voice-avatar">
+                  {p.name.charAt(0).toUpperCase()}
+                  {isInVoice(p.id) && (
+                    <span className="voice-indicator-dot" />
+                  )}
+                </div>
+                <div className="voice-participant-info">
+                  <span className="voice-participant-name">
+                    {p.id === user?.id ? `${p.name} (You)` : p.name}
+                  </span>
+                  <span className={`voice-participant-stance ${p.stance === 'for' ? 'stance-for' : 'stance-against'}`}>
+                    {p.stance === 'for' ? '👍 For' : '👎 Against'}
+                  </span>
+                </div>
+                {isInVoice(p.id) && (
+                  <div className="voice-wave">
+                    <span /><span /><span /><span />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Chat Area */}
         <div className="chat-container glass-card animate-slide-up" style={{animationDelay: '0.1s'}}>
           <div className="messages-area">
             {messages.length === 0 ? (
@@ -232,6 +325,12 @@ export default function TeamDebateSession() {
             )}
             <div ref={messagesEndRef} />
           </div>
+
+          {interimTranscript && isVoiceOn && !isMuted ? (
+            <div className="interim-text" style={{ padding: '0 16px 8px', fontStyle: 'italic', color: 'var(--text-tertiary)' }}>
+              {interimTranscript}...
+            </div>
+          ) : null}
 
           <form className="input-area" onSubmit={sendMessage}>
             <input
