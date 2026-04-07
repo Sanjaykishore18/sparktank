@@ -142,12 +142,23 @@ export default function DebatePage() {
                     className="input-field" 
                     placeholder="Enter custom topic..." 
                     id="custom-topic-input"
+                    style={{ flex: 1 }}
+                  />
+                  <input 
+                    type="number" 
+                    className="input-field" 
+                    placeholder="Size" 
+                    id="custom-size-input"
+                    min="2" max="10" defaultValue="4"
+                    title="Max Participants"
+                    style={{ width: '80px' }}
                   />
                   <button 
                     className="btn btn-accent"
                     onClick={() => {
                       const topicText = document.getElementById('custom-topic-input').value.trim() || 'Open Debate';
-                      navigate('/debate/room/new', { state: { topic: topicText, stance: 'for' } });
+                      const maxSize = parseInt(document.getElementById('custom-size-input').value, 10) || 4;
+                      navigate('/debate/room/new', { state: { topic: topicText, stance: null, maxSize } });
                     }}
                   >
                     Create

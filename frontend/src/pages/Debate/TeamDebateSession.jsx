@@ -89,9 +89,10 @@ export default function TeamDebateSession() {
       console.log('✅ Socket connected:', newSocket.id);
 
       if (roomId === 'new' && state?.topic) {
-        newSocket.emit('create_room', { topic: state.topic, userStance: state.stance });
+        newSocket.emit('create_room', { topic: state.topic, userStance: state.stance, maxSize: state.maxSize || 4 });
       } else if (roomId && roomId !== 'new') {
-        newSocket.emit('join_room', { roomId });
+        // If state has stance, pass it; otherwise joining via link will pass null
+        newSocket.emit('join_room', { roomId, stance: state?.stance || null });
       } else {
         setError('Invalid room setup. Please start from the Debate Arena.');
       }
@@ -118,8 +119,15 @@ export default function TeamDebateSession() {
       });
       setMessages(prev => [...prev, { 
         isSystem: true, 
-        content: `${data.user.name} joined the room (${data.user.stance} the topic).` 
+        content: `${data.user.name} joined the room (stance: ${data.user.stance || 'undecided'}).` 
       }]);
+    });
+
+    newSocket.on('user_updated', (data) => {
+      setRoom(prev => {
+        if (!prev) return prev;
+        return { ...prev, participants: data.participants };
+      });
     });
 
     newSocket.on('user_left', (data) => {
@@ -129,7 +137,7 @@ export default function TeamDebateSession() {
       });
       setMessages(prev => [...prev, { 
         isSystem: true, 
-        content: `${data.user} left the room.` 
+        content: `${data.user.name || data.user} left the room.` 
       }]);
     });
 
@@ -201,6 +209,27 @@ export default function TeamDebateSession() {
     );
   }
 
+  // ─── Stance Selection ───
+  const amIParticipant = room?.participants?.find(p => p.id === user?.id);
+  const myStance = amIParticipant?.stance;
+
+  if (room && !myStance && amIParticipant) {
+    return (
+      <div className="debate-session page">
+        <div className="container">
+          <div className="glass-card animate-scale-in" style={{padding: 'var(--space-8)', textAlign: 'center', maxWidth: '600px', margin: '0 auto', marginTop: '10vh'}}>
+            <h2>Choose your stance</h2>
+            <h3 style={{margin: 'var(--space-4) 0', color: 'var(--text-secondary)', fontWeight: '400'}}>Topic: <strong>{room.topic}</strong></h3>
+            <div style={{display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', marginTop: 'var(--space-6)'}}>
+              <button className="btn btn-success btn-lg" onClick={() => socket.emit('set_stance', { roomId: room.id, stance: 'for' })}>👍 I'm For It</button>
+              <button className="btn btn-accent btn-lg" onClick={() => socket.emit('set_stance', { roomId: room.id, stance: 'against' })}>👎 I'm Against It</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // ─── Room UI ───
   return (
     <div className="debate-session page">
@@ -215,7 +244,7 @@ export default function TeamDebateSession() {
             <h2>{room.topic}</h2>
             <div className="room-meta" style={{display: 'flex', gap: 'var(--space-4)', marginTop: 'var(--space-3)', flexWrap: 'wrap'}}>
               <span className="badge badge-accent">Room: {room.id}</span>
-              <span className="badge badge-primary">Participants: {room.participants.length}/4</span>
+              <span className="badge badge-primary">Participants: {room.participants.length}/{room.maxSize || 4}</span>
               <button className="btn btn-outline btn-sm" onClick={copyInvite}>📋 Copy Invite Link</button>
             </div>
           </div>
@@ -274,19 +303,20 @@ export default function TeamDebateSession() {
           {/* Participants with voice status */}
           <div className="voice-participants">
             {room.participants.map((p) => (
-              <div key={p.id} className={`voice-participant ${isInVoice(p.id) ? 'voice-active' : ''}`}>
-                <div className="voice-avatar">
+              <div key={p.id} className={`voice-participant ${isInVoice(p.id) ? 'voice-active' : ''} ${!p.online ? 'voice-offline' : ''}`}>
+                <div className="voice-avatar" style={{opacity: p.online ? 1 : 0.5}}>
                   {p.name.charAt(0).toUpperCase()}
                   {isInVoice(p.id) && (
                     <span className="voice-indicator-dot" />
                   )}
                 </div>
-                <div className="voice-participant-info">
+                <div className="voice-participant-info" style={{opacity: p.online ? 1 : 0.5}}>
                   <span className="voice-participant-name">
                     {p.id === user?.id ? `${p.name} (You)` : p.name}
+                    {!p.online && ' (Offline)'}
                   </span>
-                  <span className={`voice-participant-stance ${p.stance === 'for' ? 'stance-for' : 'stance-against'}`}>
-                    {p.stance === 'for' ? '👍 For' : '👎 Against'}
+                  <span className={`voice-participant-stance ${p.stance === 'for' ? 'stance-for' : (p.stance === 'against' ? 'stance-against' : 'stance-none')}`}>
+                    {p.stance === 'for' ? '👍 For' : (p.stance === 'against' ? '👎 Against' : '🤔 Deciding')}
                   </span>
                 </div>
                 {isInVoice(p.id) && (
