@@ -1,0 +1,96 @@
+.intro-type-select {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+}
+
+.type-card {
+  padding: var(--space-8);
+  cursor: pointer;
+  text-align: center;
+  transition: all var(--transition-base);
+}
+
+.type-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg), var(--shadow-glow-primary);
+}
+
+.type-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: var(--space-4);
+}
+
+.type-card h3 { margin-bottom: var(--space-2); }
+.type-card p { margin-bottom: var(--space-4); font-size: 0.9rem; }
+
+.intro-practice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.scenario-card {
+  padding: var(--space-6);
+}
+
+.scenario-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.scenario-duration {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+}
+
+.scenario-card h3 { margin-bottom: var(--space-2); }
+.scenario-card p { margin-bottom: var(--space-4); }
+
+.scenario-tips {
+  padding: var(--space-4);
+  background: var(--surface-glass);
+  border-radius: var(--radius-lg);
+}
+
+.scenario-tips h5 { margin-bottom: var(--space-2); }
+.scenario-tips ul { display: flex; flex-direction: column; gap: var(--space-1); }
+.scenario-tips li { font-size: 0.85rem; color: var(--text-secondary); padding-left: var(--space-4); position: relative; }
+.scenario-tips li::before { content: '→'; position: absolute; left: 0; color: var(--primary-400); }
+
+.practice-area {
+  padding: var(--space-6);
+}
+
+.practice-area h3 { margin-bottom: var(--space-2); }
+.practice-area > p { margin-bottom: var(--space-4); font-size: 0.9rem; }
+
+.intro-textarea {
+  min-height: 150px;
+  margin-bottom: var(--space-4);
+}
+
+.practice-actions {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.improved-version {
+  padding: var(--space-5);
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: var(--radius-xl);
+  margin-bottom: var(--space-6);
+}
+
+.improved-version h4 { margin-bottom: var(--space-3); }
+.improved-version p { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7; }
+
+@media (max-width: 768px) {
+  .intro-type-select { grid-template-columns: 1fr; }
+  .practice-actions { flex-direction: column; align-items: stretch; }
+}

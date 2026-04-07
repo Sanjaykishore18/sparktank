@@ -1,0 +1,19 @@
+.social-task-card {
+  padding: var(--space-8);
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.social-task-card h3 { margin-bottom: var(--space-2); }
+.social-task-card > p { margin-bottom: var(--space-4); }
+
+.social-role {
+  padding: var(--space-4);
+  background: rgba(232, 121, 249, 0.08);
+  border: 1px solid rgba(232, 121, 249, 0.2);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-4);
+}
+
+.social-role h5 { margin-bottom: var(--space-1); color: #e879f9; }
+.social-role p { font-size: 0.9rem; }
