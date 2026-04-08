@@ -35,9 +35,9 @@ export default function TeamDebateSession() {
   const animationRef = useRef(null);
 
   // Voice chat
-  const { 
+  const {
     isVoiceOn, isMuted, isDeafened, voiceUsers, voiceError,
-    joinVoice, leaveVoice, toggleMute, toggleDeafen 
+    joinVoice, leaveVoice, toggleMute, toggleDeafen
   } = useVoiceChat(socket, room?.id, user?.id);
 
   // Convert voice to text
@@ -79,7 +79,7 @@ export default function TeamDebateSession() {
 
   // Main socket effect
   useEffect(() => {
-    const token = localStorage.getItem('speakx_token');
+    const token = localStorage.getItem('VoiceCraft_token');
     if (!token) {
       setError('You must be logged in to join a team room.');
       return;
@@ -122,9 +122,9 @@ export default function TeamDebateSession() {
         if (!prev) return prev;
         return { ...prev, participants: data.participants };
       });
-      setMessages(prev => [...prev, { 
-        isSystem: true, 
-        content: `${data.user.name} joined the room.` 
+      setMessages(prev => [...prev, {
+        isSystem: true,
+        content: `${data.user.name} joined the room.`
       }]);
     });
 
@@ -140,9 +140,9 @@ export default function TeamDebateSession() {
         if (!prev) return prev;
         return { ...prev, participants: data.participants };
       });
-      setMessages(prev => [...prev, { 
-        isSystem: true, 
-        content: `${data.user.name || data.user} left the room.` 
+      setMessages(prev => [...prev, {
+        isSystem: true,
+        content: `${data.user.name || data.user} left the room.`
       }]);
     });
 
@@ -173,10 +173,10 @@ export default function TeamDebateSession() {
     let userConfig = { skin: 0, hair: 0, hairColor: 0, outfit: 0, outfitColor: 0 };
     try {
       if (user?.avatar) userConfig = typeof user.avatar === 'string' ? JSON.parse(user.avatar) : user.avatar;
-    } catch(e) {}
+    } catch (e) { }
 
     const { scene, camera, renderer } = threeService.initRoomScene(canvasRef.current, userConfig);
-    
+
     // Orbit Controls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -194,7 +194,7 @@ export default function TeamDebateSession() {
       }
     }
 
-    const CHAIR_Y  = threeService.CHAIR_Y;
+    const CHAIR_Y = threeService.CHAIR_Y;
     const SEATED_Y = threeService.SEATED_Y;
     const participantMeshes = [];
 
@@ -202,9 +202,9 @@ export default function TeamDebateSession() {
       let pConfig = { skin: i % 5, hair: i % 4, hairColor: 0, outfit: i % 2, outfitColor: 0 };
       try {
         if (p.avatar) pConfig = typeof p.avatar === 'string' ? JSON.parse(p.avatar) : p.avatar;
-      } catch(e) {}
+      } catch (e) { }
 
-      const angle  = (i / Math.max(room.participants.length, 1)) * Math.PI * 2;
+      const angle = (i / Math.max(room.participants.length, 1)) * Math.PI * 2;
       const radius = 3.8;
       const px = Math.cos(angle) * radius;
       const pz = Math.sin(angle) * radius;
@@ -212,7 +212,7 @@ export default function TeamDebateSession() {
       // Chair
       const chair = threeService.buildChair();
       chair.position.set(px, CHAIR_Y, pz);
-      chair.lookAt(0, CHAIR_Y, 0); 
+      chair.lookAt(0, CHAIR_Y, 0);
       chair.rotateY(Math.PI);      // LookAt points +Z to center. Chair back is at +Z. So we flip it to face outward.
       scene.add(chair);
 
@@ -273,8 +273,8 @@ export default function TeamDebateSession() {
     return (
       <div className="debate-session page">
         <div className="container">
-          <div className="glass-card" style={{padding: 'var(--space-6)', textAlign: 'center'}}>
-            <h2 style={{color: 'var(--error-color)'}}>Error</h2>
+          <div className="glass-card" style={{ padding: 'var(--space-6)', textAlign: 'center' }}>
+            <h2 style={{ color: 'var(--error-color)' }}>Error</h2>
             <p>{error}</p>
             <button className="btn btn-primary" onClick={() => navigate('/debate')}>Back to Arena</button>
           </div>
@@ -288,7 +288,7 @@ export default function TeamDebateSession() {
     return (
       <div className="debate-session page">
         <div className="container">
-          <div className="loading-overlay" style={{position: 'relative', height: 400}}>
+          <div className="loading-overlay" style={{ position: 'relative', height: 400 }}>
             <div className="spinner" />
             <p>Connecting to Team Room...</p>
           </div>
@@ -303,12 +303,12 @@ export default function TeamDebateSession() {
     return (
       <div className="debate-session page">
         <div className="container">
-          <div className="glass-card animate-scale-in" style={{padding: 'var(--space-8)', textAlign: 'center', maxWidth: '600px', margin: '0 auto', marginTop: '10vh'}}>
+          <div className="glass-card animate-scale-in" style={{ padding: 'var(--space-8)', textAlign: 'center', maxWidth: '600px', margin: '0 auto', marginTop: '10vh' }}>
             <h2>Choose your stance</h2>
-            <h3 style={{margin: 'var(--space-4) 0', color: 'var(--text-secondary)', fontWeight: '400'}}>Topic: <strong>{room.topic}</strong></h3>
-            <div style={{display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', marginTop: 'var(--space-6)'}}>
-              <button className="btn btn-success btn-lg" onClick={() => socket.emit('set_stance', { roomId: room.id, stance: 'for' })}><FaThumbsUp style={{marginRight:'6px'}}/> I'm For It</button>
-              <button className="btn btn-accent btn-lg" onClick={() => socket.emit('set_stance', { roomId: room.id, stance: 'against' })}><FaThumbsDown style={{marginRight:'6px'}}/> I'm Against It</button>
+            <h3 style={{ margin: 'var(--space-4) 0', color: 'var(--text-secondary)', fontWeight: '400' }}>Topic: <strong>{room.topic}</strong></h3>
+            <div style={{ display: 'flex', gap: 'var(--space-4)', justifyContent: 'center', marginTop: 'var(--space-6)' }}>
+              <button className="btn btn-success btn-lg" onClick={() => socket.emit('set_stance', { roomId: room.id, stance: 'for' })}><FaThumbsUp style={{ marginRight: '6px' }} /> I'm For It</button>
+              <button className="btn btn-accent btn-lg" onClick={() => socket.emit('set_stance', { roomId: room.id, stance: 'against' })}><FaThumbsDown style={{ marginRight: '6px' }} /> I'm Against It</button>
             </div>
           </div>
         </div>
@@ -351,7 +351,7 @@ export default function TeamDebateSession() {
         <div className="room-sidebar">
           <div className="sidebar-header">
             <h3>Debate Room</h3>
-            <span className="participant-count"><FaUsers style={{marginRight:'4px'}}/> {room.participants.length}</span>
+            <span className="participant-count"><FaUsers style={{ marginRight: '4px' }} /> {room.participants.length}</span>
           </div>
           <div className="sidebar-content">
             <div className="chat-messages-compact">

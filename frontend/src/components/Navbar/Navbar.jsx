@@ -13,7 +13,7 @@ export default function Navbar() {
       <div className="navbar-inner container">
         <Link to={user ? '/dashboard' : '/'} className="navbar-brand">
           <span className="brand-icon"><FaBolt /></span>
-          <span className="brand-text">Speak<span className="brand-accent">X</span></span>
+          <span className="brand-text">Voice<span className="brand-accent">Craft</span></span>
         </Link>
 
         {!user && isLanding && (

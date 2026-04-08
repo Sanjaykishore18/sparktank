@@ -1,12 +1,15 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import basicSsl from '@vitejs/plugin-basic-ssl'
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => {
-  const plugins = [react()]
-
+export default defineConfig(({ command }) => {
   return {
-    plugins,
+    plugins: [
+      react(),
+      // Use SSL in dev mode for microphone access over network
+      ...(command === 'serve' ? [basicSsl()] : [])
+    ],
     build: {
       outDir: 'dist',
       sourcemap: false

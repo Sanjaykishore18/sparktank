@@ -15,18 +15,18 @@ function generateToken(userId) {
 router.post('/google', async (req, res) => {
   try {
     const { credential } = req.body;
-    
+
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID
     });
-    
+
     const payload = ticket.getPayload();
     const { sub: googleId, email, name, picture } = payload;
-    
+
     // Find or create user
     let user = await User.findOne({ googleId });
-    
+
     if (!user) {
       user = await User.findOne({ email });
       if (user) {
@@ -43,9 +43,9 @@ router.post('/google', async (req, res) => {
         await user.save();
       }
     }
-    
+
     const token = generateToken(user._id);
-    
+
     res.json({
       token,
       user: {
@@ -70,19 +70,19 @@ router.post('/google', async (req, res) => {
 router.post('/demo', async (req, res) => {
   try {
     const { email, name } = req.body;
-    
+
     let user = await User.findOne({ email });
     if (!user) {
       user = new User({
-        email: email || 'demo@speakx.com',
+        email: email || 'demo@VoiceCraft.com',
         name: name || 'Demo User',
         avatar: ''
       });
       await user.save();
     }
-    
+
     const token = generateToken(user._id);
-    
+
     res.json({
       token,
       user: {

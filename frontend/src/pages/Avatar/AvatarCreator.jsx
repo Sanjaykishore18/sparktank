@@ -175,7 +175,7 @@ export default function AvatarCreator() {
   return (
     <div className="avatar-creator-page page">
       <div className="navbar glass-card">
-        <div className="nav-logo" style={{fontWeight: 800, fontSize: '1.25rem'}}>Speak<span style={{color:'var(--primary-400)'}}>X</span></div>
+        <div className="nav-logo" style={{fontWeight: 800, fontSize: '1.25rem'}}>Voice<span style={{color:'var(--primary-400)'}}>Craft</span></div>
         <button className="btn btn-ghost" onClick={() => navigate('/dashboard')}><FaArrowLeft style={{marginRight:'6px'}}/> Cancel</button>
       </div>
 

@@ -17,17 +17,17 @@ export default function Landing() {
         </div>
         <div className="container hero-content">
           <div className="hero-badge animate-slide-up">
-            <FaRocket style={{marginRight:'8px', color: 'var(--primary-400)'}}/> AI-Powered Soft Skills Training
+            <FaRocket style={{ marginRight: '8px', color: 'var(--primary-400)' }} /> AI-Powered Soft Skills Training
           </div>
           <h1 className="hero-title animate-slide-up">
             Master Your <span className="gradient-text">Communication</span> Skills
             <br />with AI Training
           </h1>
-          <p className="hero-subtitle animate-slide-up" style={{animationDelay: '0.1s'}}>
+          <p className="hero-subtitle animate-slide-up" style={{ animationDelay: '0.1s' }}>
             Practice debates, self-introductions, pitching, and public speaking
             with real-time AI feedback. Built for IT professionals who want to stand out.
           </p>
-          <div className="hero-actions animate-slide-up" style={{animationDelay: '0.2s'}}>
+          <div className="hero-actions animate-slide-up" style={{ animationDelay: '0.2s' }}>
             <Link to={user ? '/dashboard' : '/login'} className="btn btn-primary btn-lg" id="hero-cta">
               {user ? 'Go to Dashboard' : 'Start Training Free'}
               <FaArrowRight />
@@ -36,7 +36,7 @@ export default function Landing() {
               Explore Modules
             </a>
           </div>
-          <div className="hero-stats animate-fade-in" style={{animationDelay: '0.4s'}}>
+          <div className="hero-stats animate-fade-in" style={{ animationDelay: '0.4s' }}>
             <div className="hero-stat">
               <span className="hero-stat-value">3</span>
               <span className="hero-stat-label">Training Modules</span>
@@ -60,7 +60,7 @@ export default function Landing() {
         <div className="container">
           <div className="section-header text-center">
             <span className="badge badge-primary">Features</span>
-            <h2>Why SpeakX?</h2>
+            <h2>Why VoiceCraft?</h2>
             <p>Transform your communication skills with cutting-edge AI technology</p>
           </div>
           <div className="features-grid stagger-children">
@@ -96,8 +96,8 @@ export default function Landing() {
               <h3>Debate Arena</h3>
               <p>Practice argumentation with AI opponents. Master logical fallacies, structure, and emotional control.</p>
               <div className="module-badges">
-                <span className="badge badge-free"><FaCheck style={{marginRight:'4px'}}/> Free: 1-on-1 AI</span>
-                <span className="badge badge-premium"><FaStar style={{marginRight:'4px'}}/> Pro: Team Rooms</span>
+                <span className="badge badge-free"><FaCheck style={{ marginRight: '4px' }} /> Free: 1-on-1 AI</span>
+                <span className="badge badge-premium"><FaStar style={{ marginRight: '4px' }} /> Pro: Team Rooms</span>
               </div>
             </div>
             <div className="module-card glass-card">
@@ -105,8 +105,8 @@ export default function Landing() {
               <h3>Introductions & Pitches</h3>
               <p>Master self-introductions for any scenario — formal interviews to casual meetups. Practice corporate pitching with AI scoring.</p>
               <div className="module-badges">
-                <span className="badge badge-free"><FaCheck style={{marginRight:'4px'}}/> Intro: Free</span>
-                <span className="badge badge-free"><FaCheck style={{marginRight:'4px'}}/> Pitching: Free</span>
+                <span className="badge badge-free"><FaCheck style={{ marginRight: '4px' }} /> Intro: Free</span>
+                <span className="badge badge-free"><FaCheck style={{ marginRight: '4px' }} /> Pitching: Free</span>
               </div>
             </div>
             <div className="module-card glass-card">
@@ -114,7 +114,7 @@ export default function Landing() {
               <h3>Social & Public Speaking</h3>
               <p>Build connections and master public speaking with AI-assigned challenges like tech talks and networking events.</p>
               <div className="module-badges">
-                <span className="badge badge-premium"><FaStar style={{marginRight:'4px'}}/> Premium Only</span>
+                <span className="badge badge-premium"><FaStar style={{ marginRight: '4px' }} /> Premium Only</span>
               </div>
             </div>
           </div>
@@ -182,7 +182,7 @@ export default function Landing() {
           <div className="footer-content">
             <div className="footer-brand">
               <span className="brand-icon"><FaBolt /></span>
-              <span className="brand-text">Speak<span className="brand-accent">X</span></span>
+              <span className="brand-text">Voice<span className="brand-accent">Craft</span></span>
             </div>
             <p>AI-powered soft skills training for IT professionals</p>
           </div>

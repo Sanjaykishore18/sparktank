@@ -8,20 +8,20 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('speakx_token');
-    const savedUser = localStorage.getItem('speakx_user');
-    
+    const token = localStorage.getItem('VoiceCraft_token');
+    const savedUser = localStorage.getItem('VoiceCraft_user');
+
     if (token && savedUser) {
       setUser(JSON.parse(savedUser));
       // Verify token with server
       api.get('/auth/me')
         .then(res => {
           setUser(res.data.user);
-          localStorage.setItem('speakx_user', JSON.stringify(res.data.user));
+          localStorage.setItem('VoiceCraft_user', JSON.stringify(res.data.user));
         })
         .catch(() => {
-          localStorage.removeItem('speakx_token');
-          localStorage.removeItem('speakx_user');
+          localStorage.removeItem('VoiceCraft_token');
+          localStorage.removeItem('VoiceCraft_user');
           setUser(null);
         })
         .finally(() => setLoading(false));
@@ -34,8 +34,8 @@ export function AuthProvider({ children }) {
     try {
       const res = await api.post('/auth/google', { credential });
       const { token, user: userData } = res.data;
-      localStorage.setItem('speakx_token', token);
-      localStorage.setItem('speakx_user', JSON.stringify(userData));
+      localStorage.setItem('VoiceCraft_token', token);
+      localStorage.setItem('VoiceCraft_user', JSON.stringify(userData));
       setUser(userData);
       return userData;
     } catch (error) {
@@ -45,13 +45,13 @@ export function AuthProvider({ children }) {
 
   const loginDemo = async (name, email) => {
     try {
-      const res = await api.post('/auth/demo', { 
-        name: name || 'Demo User', 
-        email: email || 'demo@speakx.com' 
+      const res = await api.post('/auth/demo', {
+        name: name || 'Demo User',
+        email: email || 'demo@VoiceCraft.com'
       });
       const { token, user: userData } = res.data;
-      localStorage.setItem('speakx_token', token);
-      localStorage.setItem('speakx_user', JSON.stringify(userData));
+      localStorage.setItem('VoiceCraft_token', token);
+      localStorage.setItem('VoiceCraft_user', JSON.stringify(userData));
       setUser(userData);
       return userData;
     } catch (error) {
@@ -60,14 +60,14 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    localStorage.removeItem('speakx_token');
-    localStorage.removeItem('speakx_user');
+    localStorage.removeItem('VoiceCraft_token');
+    localStorage.removeItem('VoiceCraft_user');
     setUser(null);
   };
 
   const updateUser = (updatedUser) => {
     setUser(updatedUser);
-    localStorage.setItem('speakx_user', JSON.stringify(updatedUser));
+    localStorage.setItem('VoiceCraft_user', JSON.stringify(updatedUser));
   };
 
   const upgradePlan = async () => {
@@ -82,8 +82,8 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, loading, loginWithGoogle, loginDemo, logout, updateUser, upgradePlan 
+    <AuthContext.Provider value={{
+      user, loading, loginWithGoogle, loginDemo, logout, updateUser, upgradePlan
     }}>
       {children}
     </AuthContext.Provider>

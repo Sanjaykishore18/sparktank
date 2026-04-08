@@ -1,4 +1,4 @@
-# ⚡ SpeakX — AI-Powered Soft Skills Training Platform
+# ⚡ VoiceCraft — AI-Powered Soft Skills Training Platform
 
 An AI-powered training platform for IT professionals to master communication skills through debates, self-introductions, corporate pitching, and public speaking — all with real-time Gemini AI feedback and gamification.
 

@@ -63,13 +63,18 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({ message: 'VoiceCraft API is running correctly.' });
+});
+
 // Socket setup
 setupSocket(io);
 
 // Connect to MongoDB and start server
 const PORT = process.env.PORT || 5000;
 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/speakx')
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/VoiceCraft')
   .then(() => {
     console.log('✅ Connected to MongoDB');
     server.listen(PORT, () => {

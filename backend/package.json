@@ -1,7 +1,7 @@
 {
-  "name": "speakx-backend",
+  "name": "VoiceCraft-backend",
   "version": "1.0.0",
-  "description": "SpeakX - AI Soft Skills Training Platform Backend",
+  "description": "VoiceCraft - AI Soft Skills Training Platform Backend",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

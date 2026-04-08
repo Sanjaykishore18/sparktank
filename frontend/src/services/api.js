@@ -10,7 +10,7 @@ const api = axios.create({
 
 // Add auth token to requests
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('speakx_token');
+  const token = localStorage.getItem('VoiceCraft_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -22,8 +22,8 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('speakx_token');
-      localStorage.removeItem('speakx_user');
+      localStorage.removeItem('VoiceCraft_token');
+      localStorage.removeItem('VoiceCraft_user');
       window.location.href = '/login';
     }
     return Promise.reject(error);
