@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaTrophy, FaStar, FaDumbbell, FaChartLine, FaPen, FaXmark, FaCheck, FaLightbulb, FaArrowRight, FaThumbsUp, FaThumbsDown, FaStopwatch, FaCommentDots, FaFlagCheckered, FaStop, FaMicrophone, FaPaperPlane } from 'react-icons/fa6';
+import { FaTrophy, FaStar, FaDumbbell, FaChartLine, FaPen, FaXmark, FaCheck, FaLightbulb, FaArrowRight, FaThumbsUp, FaThumbsDown, FaStopwatch, FaCommentDots, FaFlagCheckered, FaStop, FaMicrophone, FaPaperPlane, FaVolumeHigh, FaVolumeXmark } from 'react-icons/fa6';
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition';
 import { useAuth } from '../../context/AuthContext';
 import * as THREE from 'three';
@@ -22,6 +22,7 @@ export default function DebateSession() {
   const [xpEarned, setXpEarned] = useState(0);
   const [newBadges, setNewBadges] = useState([]);
   const [timer, setTimer] = useState(0);
+  const [isAiVoiceOn, setIsAiVoiceOn] = useState(true);
   const messagesEndRef = useRef(null);
   const timerRef = useRef(null);
   
@@ -50,6 +51,7 @@ export default function DebateSession() {
     return () => {
       clearInterval(timerRef.current);
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     };
   }, [sessionId]);
 
@@ -142,8 +144,16 @@ export default function DebateSession() {
 
     try {
       const res = await api.post(`/debate/${sessionId}/message`, { message: text });
-      const aiMsg = { role: 'ai', content: res.data.aiResponse, timestamp: new Date() };
+      const aiResponseText = res.data.aiResponse;
+      const aiMsg = { role: 'ai', content: aiResponseText, timestamp: new Date() };
       setMessages(prev => [...prev, aiMsg]);
+      
+      // Speak AI response if voice is enabled
+      if (isAiVoiceOn && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(aiResponseText);
+        window.speechSynthesis.speak(utterance);
+      }
     } catch (err) {
       console.error('Failed to send message:', err);
     } finally {
@@ -378,6 +388,17 @@ export default function DebateSession() {
                   </div>
                 )}
                 <div className="chat-input-row">
+                  <button
+                    type="button"
+                    className={`btn btn-icon btn-sm ${isAiVoiceOn ? 'btn-primary' : 'btn-ghost'}`}
+                    onClick={() => {
+                      if (isAiVoiceOn && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+                      setIsAiVoiceOn(!isAiVoiceOn);
+                    }}
+                    title={isAiVoiceOn ? "Mute AI Voice" : "Enable AI Voice"}
+                  >
+                    {isAiVoiceOn ? <FaVolumeHigh /> : <FaVolumeXmark />}
+                  </button>
                   {isSupported && (
                     <button
                       type="button"
